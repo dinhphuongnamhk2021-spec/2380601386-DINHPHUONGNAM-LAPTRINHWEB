@@ -1,0 +1,330 @@
+@model DOANLAPTRINHWWEB.Controllers.AdminViewModel
+@{
+    ViewData["Title"] = "Admin Dashboard - DocTruyen";
+}
+
+@* ─── CSS riêng cho trang này ───────────────────────────────────────────── *@
+<style>
+    :root {
+        --ink: #1a1a2e;
+        --ink2: #16213e;
+        --gold: #e8a045;
+        --gold-soft: #f5c878;
+        --muted: #6b7280;
+        --card-bg: #ffffff;
+        --border: #e5e7eb;
+    }
+
+    .admin-header {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        padding: 30px 0;
+        color: #fff;
+        position: relative;
+        overflow: hidden;
+    }
+    .admin-header::before {
+        content: '';
+        position: absolute; inset: 0;
+        background: radial-gradient(ellipse 80% 60% at 60% 50%, rgba(232,160,69,.12) 0%, transparent 70%);
+        pointer-events: none;
+    }
+
+    .admin-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+    .admin-title span {
+        color: var(--gold);
+    }
+    .admin-sub {
+        color: rgba(255,255,255,.7);
+        font-size: 1rem;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    .stat-card {
+        background: #fff;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        text-align: center;
+        transition: transform .2s;
+    }
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0,0,0,.1);
+    }
+    .stat-icon {
+        font-size: 2.5rem;
+        color: var(--gold);
+        margin-bottom: 12px;
+    }
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--ink);
+        margin-bottom: 4px;
+    }
+    .stat-label {
+        color: var(--muted);
+        font-size: .9rem;
+    }
+
+    .content-section {
+        background: #fff;
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 24px;
+        box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    }
+
+    .section-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--ink);
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid var(--gold);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .table {
+        margin-bottom: 0;
+    }
+    .table thead th {
+        background: #f9fafb;
+        font-weight: 600;
+        color: var(--ink);
+        border-bottom: 2px solid var(--gold);
+    }
+    .table tbody tr {
+        transition: background .15s;
+    }
+    .table tbody tr:hover {
+        background: #f9fafb;
+    }
+
+    .badge-role-admin {
+        background: rgba(239, 68, 68, .1);
+        color: #ef4444;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: .8rem;
+        font-weight: 600;
+    }
+    .badge-role-user {
+        background: rgba(59, 130, 246, .1);
+        color: #3b82f6;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: .8rem;
+        font-weight: 600;
+    }
+
+    .btn-action {
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: .85rem;
+        text-decoration: none;
+        transition: all .15s;
+    }
+    .btn-view {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+    .btn-view:hover {
+        background: #bfdbfe;
+    }
+    .btn-edit {
+        background: #fef3c7;
+        color: #92400e;
+    }
+    .btn-edit:hover {
+        background: #fde68a;
+    }
+    .btn-delete {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+    .btn-delete:hover {
+        background: #fecaca;
+    }
+</style>
+
+@* Google Font Playfair Display *@
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+@* Bootstrap Icons *@
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+@* ─── ADMIN HEADER ─────────────────────────────────────────────────────────────── *@
+<div class="admin-header">
+    <div class="container">
+        <h1 class="admin-title">Admin <span>Dashboard</span></h1>
+        <p class="admin-sub">Quản lý hệ thống DocTruyen</p>
+    </div>
+</div>
+
+@* ─── MAIN CONTENT ───────────────────────────────────────────────────────────── *@
+<div class="container py-4">
+    @* Stats Cards *@
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="bi bi-people"></i>
+            </div>
+            <div class="stat-value">@Model.TotalUsers.ToString("N0")</div>
+            <div class="stat-label">Người dùng</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="bi bi-book"></i>
+            </div>
+            <div class="stat-value">@Model.TotalStories.ToString("N0")</div>
+            <div class="stat-label">Truyện</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="bi bi-file-text"></i>
+            </div>
+            <div class="stat-value">@Model.TotalChapters.ToString("N0")</div>
+            <div class="stat-label">Chương</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="bi bi-eye"></i>
+            </div>
+            <div class="stat-value">@Model.TotalViews.ToString("N0")</div>
+            <div class="stat-label">Lượt xem</div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-6">
+            @* Recent Stories *@
+            <div class="content-section">
+                <div class="section-title">
+                    <span><i class="bi bi-clock-history me-2"></i>Truyện Mới</span>
+                    <a asp-action="Stories" class="btn btn-sm btn-outline-primary">Xem tất cả</a>
+                </div>
+                @if (Model.RecentStories.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Tiêu đề</th>
+                                    <th>Tác giả</th>
+                                    <th>Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var story in Model.RecentStories)
+                                {
+                                    <tr>
+                                        <td>
+                                            <a asp-controller="Story" asp-action="Detail" asp-route-id="@story.Id" 
+                                               class="text-decoration-none fw-bold">@story.Title</a>
+                                        </td>
+                                        <td>@story.AuthorName</td>
+                                        <td>
+                                            @if (story.Status == "Hoàn thành")
+                                            {
+                                                <span class="badge bg-success">Full</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-primary">Đang ra</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted text-center py-3">Chưa có truyện nào</p>
+                }
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            @* Recent Users *@
+            <div class="content-section">
+                <div class="section-title">
+                    <span><i class="bi bi-person-plus me-2"></i>Người Dùng Mới</span>
+                    <a asp-action="Users" class="btn btn-sm btn-outline-primary">Xem tất cả</a>
+                </div>
+                @if (Model.RecentUsers.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Tên đăng nhập</th>
+                                    <th>Email</th>
+                                    <th>Vai trò</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var user in Model.RecentUsers)
+                                {
+                                    <tr>
+                                        <td>@user.UserName</td>
+                                        <td>@user.Email</td>
+                                        <td>
+                                            @if (user.Role == "Admin")
+                                            {
+                                                <span class="badge-role-admin">Admin</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge-role-user">User</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted text-center py-3">Chưa có người dùng nào</p>
+                }
+            </div>
+        </div>
+    </div>
+
+    @* Quick Actions *@
+    <div class="content-section">
+        <div class="section-title">
+            <span><i class="bi bi-lightning me-2"></i>Hành Động Nhanh</span>
+        </div>
+        <div class="d-flex gap-3 flex-wrap">
+            <a asp-action="CreateStory" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-2"></i>Thêm Truyện Mới
+            </a>
+            <a asp-action="Stories" class="btn btn-outline-primary">
+                <i class="bi bi-book me-2"></i>Quản Lý Truyện
+            </a>
+            <a asp-action="Users" class="btn btn-outline-secondary">
+                <i class="bi bi-people me-2"></i>Quản Lý Người Dùng
+            </a>
+            <a asp-controller="Story" asp-action="Index" class="btn btn-outline-success">
+                <i class="bi bi-house me-2"></i>Xem Trang Chủ
+            </a>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,390 @@
+@model DOANLAPTRINHWWEB.Models.Story
+@{
+    ViewData["Title"] = Model.Title + " - DocTruyen";
+}
+
+@* ─── CSS riêng cho trang này ───────────────────────────────────────────── *@
+<style>
+    :root {
+        --ink: #1a1a2e;
+        --ink2: #16213e;
+        --gold: #e8a045;
+        --gold-soft: #f5c878;
+        --muted: #6b7280;
+        --card-bg: #ffffff;
+        --border: #e5e7eb;
+    }
+
+    .detail-header {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        padding: 40px 0;
+        color: #fff;
+        position: relative;
+        overflow: hidden;
+    }
+    .detail-header::before {
+        content: '';
+        position: absolute; inset: 0;
+        background: radial-gradient(ellipse 80% 60% at 60% 50%, rgba(232,160,69,.12) 0%, transparent 70%);
+        pointer-events: none;
+    }
+
+    .story-cover {
+        aspect-ratio: 3/4;
+        border-radius: 12px;
+        overflow: hidden;
+        background: linear-gradient(135deg, #1a1a2e, #0f3460);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 8px 24px rgba(0,0,0,.3);
+    }
+    .story-cover i {
+        font-size: 4rem;
+        color: rgba(255,255,255,.3);
+    }
+
+    .story-info h1 {
+        font-family: 'Playfair Display', serif;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 12px;
+        color: #fff;
+    }
+    .story-info .author-name {
+        color: rgba(255,255,255,.7);
+        font-size: 1rem;
+        margin-bottom: 16px;
+    }
+    .story-info .author-name span {
+        color: var(--gold);
+        font-weight: 600;
+    }
+
+    .story-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: rgba(255,255,255,.8);
+        font-size: .9rem;
+    }
+    .meta-item i {
+        color: var(--gold);
+    }
+
+    .story-genres {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 20px;
+    }
+    .genre-badge {
+        background: rgba(232,160,69,.2);
+        color: var(--gold);
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: .85rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all .2s;
+    }
+    .genre-badge:hover {
+        background: rgba(232,160,69,.3);
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: .85rem;
+        font-weight: 600;
+    }
+    .status-ongoing {
+        background: rgba(59, 130, 246, .2);
+        color: #60a5fa;
+    }
+    .status-completed {
+        background: rgba(34, 197, 94, .2);
+        color: #4ade80;
+    }
+
+    .btn-read {
+        background: var(--gold);
+        color: #1a1a2e;
+        font-weight: 700;
+        border: none;
+        border-radius: 10px;
+        padding: 12px 32px;
+        transition: all .2s;
+        text-decoration: none;
+        display: inline-block;
+    }
+    .btn-read:hover {
+        background: var(--gold-soft);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(232,160,69,.4);
+    }
+
+    .content-section {
+        background: #fff;
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 24px;
+        box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    }
+
+    .section-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--ink);
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid var(--gold);
+    }
+
+    .description-text {
+        color: #374151;
+        line-height: 1.8;
+        font-size: 1rem;
+    }
+
+    .chapter-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    .chapter-item {
+        display: flex;
+        align-items: center;
+        padding: 12px 16px;
+        border-bottom: 1px solid #f3f4f6;
+        transition: all .15s;
+        text-decoration: none;
+        color: #374151;
+    }
+    .chapter-item:hover {
+        background: #f9fafb;
+        color: var(--gold);
+    }
+    .chapter-number {
+        background: var(--ink);
+        color: #fff;
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: .85rem;
+        font-weight: 600;
+        margin-right: 12px;
+        flex-shrink: 0;
+    }
+    .chapter-title {
+        flex: 1;
+        font-weight: 500;
+    }
+    .chapter-date {
+        color: var(--muted);
+        font-size: .8rem;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 16px;
+    }
+    .stat-card {
+        background: #f9fafb;
+        padding: 16px;
+        border-radius: 10px;
+        text-align: center;
+    }
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--gold);
+    }
+    .stat-label {
+        color: var(--muted);
+        font-size: .85rem;
+        margin-top: 4px;
+    }
+
+    .rating-stars {
+        color: var(--gold);
+        font-size: 1.2rem;
+        letter-spacing: 2px;
+    }
+
+    @@media (max-width: 768px) {
+        .detail-header { padding: 24px 0; }
+        .story-info h1 { font-size: 1.5rem; }
+        .story-cover { max-width: 200px; margin: 0 auto 20px; }
+    }
+</style>
+
+@* ─── DETAIL HEADER ─────────────────────────────────────────────────────────── *@
+<div class="detail-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-4 col-sm-5 mb-4 mb-md-0">
+                <div class="story-cover">
+                    <i class="bi bi-book"></i>
+                </div>
+            </div>
+            <div class="col-md-8 col-sm-7">
+                <div class="story-info">
+                    <h1>@Model.Title</h1>
+                    <div class="author-name">
+                        Tác giả: <span>@Model.AuthorName</span>
+                    </div>
+                    
+                    <div class="story-meta">
+                        <div class="meta-item">
+                            <i class="bi bi-eye"></i>
+                            <span>@Model.ViewCount.ToString("N0") lượt xem</span>
+                        </div>
+                        <div class="meta-item">
+                            <i class="bi bi-book"></i>
+                            <span>@Model.ChapterCount chương</span>
+                        </div>
+                        <div class="meta-item">
+                            <i class="bi bi-star-fill"></i>
+                            <span>@Model.Rating.ToString("0.0")</span>
+                        </div>
+                        <div class="meta-item">
+                            <i class="bi bi-calendar"></i>
+                            <span>@Model.UpdatedAt.ToString("dd/MM/yyyy")</span>
+                        </div>
+                    </div>
+
+                    <div class="story-genres">
+                        @foreach (var sg in Model.StoryGenres)
+                        {
+                            <a href="/Story?genreId=@sg.GenreId" class="genre-badge">@sg.Genre.Name</a>
+                        }
+                    </div>
+
+                    <div class="mb-3">
+                        @if (Model.Status == "Hoàn thành")
+                        {
+                            <span class="status-badge status-completed">✓ Hoàn thành</span>
+                        }
+                        else
+                        {
+                            <span class="status-badge status-ongoing">● Đang ra</span>
+                        }
+                    </div>
+
+                    @if (Model.Chapters.Any())
+                    {
+                        <a href="/Story/Chapter/@Model.Chapters.First().Id" class="btn-read">
+                            <i class="bi bi-book-open me-2"></i>Đọc Ngay
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ─── MAIN CONTENT ───────────────────────────────────────────────────────────── *@
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-8">
+            @* Description *@
+            <div class="content-section">
+                <h2 class="section-title">Giới Thiệu</h2>
+                <div class="description-text">
+                    @if (!string.IsNullOrEmpty(Model.Description))
+                    {
+                        @Model.Description
+                    }
+                    else
+                    {
+                        <text>Chưa có mô tả cho truyện này.</text>
+                    }
+                </div>
+            </div>
+
+            @* Chapter List *@
+            <div class="content-section">
+                <h2 class="section-title">Danh Sách Chương</h2>
+                @if (Model.Chapters.Any())
+                {
+                    <ul class="chapter-list">
+                        @foreach (var chapter in Model.Chapters.OrderBy(c => c.ChapterNumber))
+                        {
+                            <li>
+                                <a href="/Story/Chapter/@chapter.Id" class="chapter-item">
+                                    <span class="chapter-number">@chapter.ChapterNumber</span>
+                                    <span class="chapter-title">@chapter.Title</span>
+                                    <span class="chapter-date">@chapter.CreatedAt.ToString("dd/MM/yyyy")</span>
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p class="text-muted">Chưa có chương nào.</p>
+                }
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            @* Stats *@
+            <div class="content-section">
+                <h2 class="section-title">Thống Kê</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">@Model.ViewCount.ToString("N0")</div>
+                        <div class="stat-label">Lượt xem</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">@Model.ChapterCount</div>
+                        <div class="stat-label">Chương</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">@Model.Rating.ToString("0.0")</div>
+                        <div class="stat-label">Đánh giá</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">@Model.Comments.Count</div>
+                        <div class="stat-label">Bình luận</div>
+                    </div>
+                </div>
+            </div>
+
+            @* Rating *@
+            <div class="content-section">
+                <h2 class="section-title">Đánh Giá</h2>
+                <div class="text-center">
+                    <div class="rating-stars mb-2">
+                        @for (int i = 1; i <= 5; i++)
+                        {
+                            if (i <= Math.Round(Model.Rating))
+                            {
+                                <i class="bi bi-star-fill"></i>
+                            }
+                            else
+                            {
+                                <i class="bi bi-star"></i>
+                            }
+                        }
+                    </div>
+                    <div class="h3 mb-1">@Model.Rating.ToString("0.0")</div>
+                    <div class="text-muted">@Model.Ratings.Count đánh giá</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - DocTruyen</title>
+    <script type="importmap"></script>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/DOANLAPTRINHWWEB.styles.css" asp-append-version="true" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <style>
+        body { background: #f8f9fa; }
+
+        /* ── Navbar ── */
+        .main-navbar {
+            background: #1a1a2e !important;
+            padding: 0 0;
+            box-shadow: 0 2px 12px rgba(0,0,0,.25);
+        }
+        .main-navbar .navbar-brand {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.35rem;
+            color: #e8a045 !important;
+            font-weight: 700;
+            letter-spacing: -.3px;
+        }
+        .main-navbar .nav-link {
+            color: rgba(255,255,255,.75) !important;
+            font-size: .88rem;
+            font-weight: 500;
+            padding: 18px 14px !important;
+            transition: color .15s;
+        }
+        .main-navbar .nav-link:hover,
+        .main-navbar .nav-link.active-link {
+            color: #e8a045 !important;
+        }
+        .main-navbar .nav-link i { margin-right: 4px; }
+
+        /* Genre quick-links */
+        .genre-bar {
+            background: #16213e;
+            padding: 6px 0;
+            overflow-x: auto;
+            white-space: nowrap;
+            scrollbar-width: none;
+        }
+        .genre-bar::-webkit-scrollbar { display:none; }
+        .genre-link {
+            display: inline-block;
+            color: rgba(255,255,255,.55);
+            font-size: .78rem;
+            padding: 3px 12px;
+            text-decoration: none;
+            border-radius: 20px;
+            transition: all .15s;
+        }
+        .genre-link:hover { color: #e8a045; background: rgba(232,160,69,.1); }
+
+        /* ── Footer ── */
+        footer.main-footer {
+            background: #1a1a2e;
+            color: rgba(255,255,255,.5);
+            padding: 24px 0;
+            margin-top: 40px;
+            font-size: .82rem;
+        }
+        footer.main-footer a { color: #e8a045; text-decoration: none; }
+        footer.main-footer a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+    @* ── Navbar chính ── *@
+    <nav class="navbar navbar-expand-md main-navbar">
+        <div class="container">
+            <a class="navbar-brand" asp-controller="Story" asp-action="Index">
+                📖 DocTruyen
+            </a>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navMain">
+                <i class="bi bi-list text-white fs-5"></i>
+            </button>
+            <div class="collapse navbar-collapse" id="navMain">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Story" asp-action="Index">
+                            <i class="bi bi-house"></i>Trang Chủ
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Story" asp-action="Index" asp-route-status="Đang ra">
+                            <i class="bi bi-lightning"></i>Đang Ra
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Story" asp-action="Index" asp-route-status="Hoàn thành">
+                            <i class="bi bi-check-circle"></i>Hoàn Thành
+                        </a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav ms-auto">
+                    @if (Context.Session.GetString("UserName") != null)
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Account" asp-action="Profile">
+                                <i class="bi bi-person-circle"></i>@Context.Session.GetString("UserName")
+                            </a>
+                        </li>
+                        @if (Context.Session.GetString("Role") == "Admin")
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Admin" asp-action="Index">
+                                    <i class="bi bi-gear"></i>Admin
+                                </a>
+                            </li>
+                        }
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Account" asp-action="Logout">
+                                <i class="bi bi-box-arrow-right"></i>Đăng Xuất
+                            </a>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Account" asp-action="Login">
+                                <i class="bi bi-person"></i>Đăng Nhập
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Account" asp-action="Register">
+                                <i class="bi bi-person-plus"></i>Đăng Ký
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    @* ── Genre bar ── *@
+    <div class="genre-bar">
+        <div class="container">
+            <a asp-controller="Story" asp-action="Index" class="genre-link">Tất cả</a>
+            <a asp-controller="Genre" asp-action="Index" asp-route-id="1" class="genre-link">Tiên Hiệp</a>
+            <a asp-controller="Genre" asp-action="Index" asp-route-id="2" class="genre-link">Huyền Huyễn</a>
+            <a asp-controller="Genre" asp-action="Index" asp-route-id="3" class="genre-link">Kiếm Hiệp</a>
+            <a asp-controller="Genre" asp-action="Index" asp-route-id="4" class="genre-link">Đô Thị</a>
+            <a asp-controller="Genre" asp-action="Index" asp-route-id="5" class="genre-link">Mạt Thế</a>
+            <a asp-controller="Genre" asp-action="Index" asp-route-id="6" class="genre-link">Ngôn Tình</a>
+            <a asp-controller="Genre" asp-action="Index" asp-route-id="7" class="genre-link">Hệ Thống</a>
+            <a asp-controller="Genre" asp-action="Index" asp-route-id="8" class="genre-link">Lịch Sử</a>
+            <a asp-controller="Genre" asp-action="Index" asp-route-id="9" class="genre-link">Trinh Thám</a>
+            <a asp-controller="Genre" asp-action="Index" asp-route-id="10" class="genre-link">Hoạt Hình</a>
+            <a asp-controller="Genre" asp-action="Index" asp-route-id="11" class="genre-link">Hành Động</a>
+        </div>
+    </div>
+
+    @* ── Content ── *@
+    @RenderBody()
+
+    @* ── Footer ── *@
+    <footer class="main-footer">
+        <div class="container text-center">
+            <p class="mb-1">
+                © 2026 <strong style="color:#e8a045;">DocTruyen</strong> &nbsp;·&nbsp;
+                Đồ án môn Lập Trình Web
+            </p>
+            <p class="mb-0" style="font-size:.75rem;">
+                Nội dung chỉ mang tính minh họa cho mục đích học tập
+            </p>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,193 @@
+@model DOANLAPTRINHWWEB.Models.Story
+@{
+    ViewData["Title"] = "Thêm Truyện Mới - Admin";
+    var genres = ViewBag.Genres as List<DOANLAPTRINHWWEB.Models.Genre> ?? new List<DOANLAPTRINHWWEB.Models.Genre>();
+}
+
+@* ─── CSS riêng cho trang này ───────────────────────────────────────────── *@
+<style>
+    :root {
+        --ink: #1a1a2e;
+        --ink2: #16213e;
+        --gold: #e8a045;
+        --gold-soft: #f5c878;
+        --muted: #6b7280;
+        --card-bg: #ffffff;
+        --border: #e5e7eb;
+    }
+
+    .admin-header {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        padding: 30px 0;
+        color: #fff;
+        position: relative;
+        overflow: hidden;
+    }
+    .admin-header::before {
+        content: '';
+        position: absolute; inset: 0;
+        background: radial-gradient(ellipse 80% 60% at 60% 50%, rgba(232,160,69,.12) 0%, transparent 70%);
+        pointer-events: none;
+    }
+
+    .admin-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+    .admin-title span {
+        color: var(--gold);
+    }
+
+    .content-section {
+        background: #fff;
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 24px;
+        box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    }
+
+    .section-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--ink);
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid var(--gold);
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: var(--ink);
+        margin-bottom: 8px;
+    }
+
+    .form-control, .form-select {
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        padding: 10px 14px;
+        transition: all .15s;
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: var(--gold);
+        box-shadow: 0 0 0 3px rgba(232,160,69,.2);
+    }
+
+    .genre-checkbox {
+        display: inline-flex;
+        align-items: center;
+        margin-right: 16px;
+        margin-bottom: 8px;
+    }
+    .genre-checkbox input {
+        margin-right: 6px;
+    }
+
+    .btn-primary {
+        background: var(--gold);
+        border-color: var(--gold);
+        color: #1a1a2e;
+    }
+    .btn-primary:hover {
+        background: var(--gold-soft);
+        border-color: var(--gold-soft);
+    }
+</style>
+
+@* Google Font Playfair Display *@
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+@* Bootstrap Icons *@
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+@* ─── ADMIN HEADER ─────────────────────────────────────────────────────────────── *@
+<div class="admin-header">
+    <div class="container">
+        <h1 class="admin-title">Thêm <span>Truyện Mới</span></h1>
+    </div>
+</div>
+
+@* ─── MAIN CONTENT ───────────────────────────────────────────────────────────── *@
+<div class="container py-4">
+    <div class="content-section">
+        <div class="section-title">
+            <span><i class="bi bi-plus-circle me-2"></i>Thông Tin Truyện</span>
+        </div>
+
+        <form method="post" enctype="multipart/form-data">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="mb-3">
+                        <label for="Title" class="form-label">Tiêu đề *</label>
+                        <input type="text" class="form-control" id="Title" name="Title" 
+                               value="@Model?.Title" required maxlength="200">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="AuthorName" class="form-label">Tác giả *</label>
+                        <input type="text" class="form-control" id="AuthorName" name="AuthorName" 
+                               value="@Model?.AuthorName" required maxlength="100">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="Description" class="form-label">Mô tả</label>
+                        <textarea class="form-control" id="Description" name="Description" rows="4" 
+                                  maxlength="2000">@Model?.Description</textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="CoverImage" class="form-label">Ảnh bìa</label>
+                        <input type="text" class="form-control" id="CoverImage" name="CoverImage" 
+                               value="@Model?.CoverImage" placeholder="/images/default-cover.jpg">
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="Status" class="form-label">Trạng thái</label>
+                            <select class="form-select" id="Status" name="Status">
+                                <option value="Đang ra" selected="@(Model?.Status == "Đang ra")">Đang ra</option>
+                                <option value="Hoàn thành" selected="@(Model?.Status == "Hoàn thành")">Hoàn thành</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="ViewCount" class="form-label">Lượt xem ban đầu</label>
+                            <input type="number" class="form-control" id="ViewCount" name="ViewCount" 
+                                   value="@Model?.ViewCount" min="0">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Thể loại</label>
+                        <div>
+                            @foreach (var genre in genres)
+                            {
+                                <label class="genre-checkbox">
+                                    <input type="checkbox" name="selectedGenres" value="@genre.Id">
+                                    @genre.Name
+                                </label>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-circle me-2"></i>Lưu Truyện
+                </button>
+                <a asp-action="Stories" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle me-2"></i>Hủy
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <div class="mt-3">
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-2"></i>Quay lại Dashboard
+        </a>
+    </div>
+</div>
