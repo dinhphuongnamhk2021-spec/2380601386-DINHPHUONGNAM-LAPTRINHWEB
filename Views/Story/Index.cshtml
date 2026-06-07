@@ -292,11 +292,11 @@
                 @foreach (var s in Model.FeaturedStories)
                 {
                     <div class="featured-card">
-                        <div class="featured-img" style="background:linear-gradient(160deg,#1a1a2e,#0f3460);">
-                            <div style="height:100%;display:flex;align-items:center;justify-content:center;opacity:.3;">
-                                <i class="bi bi-book" style="font-size:3rem;color:#fff;"></i>
-                            </div>
-                        </div>
+                        <img class="featured-img"
+                             src="@s.CoverImage"
+                             alt="@s.Title"
+                             loading="lazy"
+                             referrerpolicy="no-referrer">
                         <div class="featured-overlay">
                             <a asp-controller="Story" asp-action="Detail" asp-route-id="@s.Id"
                                class="featured-title d-block">@s.Title</a>
@@ -322,10 +322,11 @@
                 {
                     <div class="col">
                         <div class="story-card">
-                            <div class="cover-placeholder">
-                                <i class="bi bi-journal-richtext"></i>
-                                <span>@s.Title</span>
-                            </div>
+                            <img class="story-card-img"
+                                 src="@s.CoverImage"
+                                 alt="@s.Title"
+                                 loading="lazy"
+                                 referrerpolicy="no-referrer">
                             <div class="story-card-body">
                                 <a asp-controller="Story" asp-action="Detail" asp-route-id="@s.Id" class="story-title">@s.Title</a>
                                 <div class="story-author">@s.AuthorName</div>
@@ -412,10 +413,11 @@
             {
                 <div class="col">
                     <div class="story-card">
-                        <div class="cover-placeholder">
-                            <i class="bi bi-journal-richtext"></i>
-                            <span>@s.Title</span>
-                        </div>
+                        <img class="story-card-img"
+                             src="@s.CoverImage"
+                             alt="@s.Title"
+                             loading="lazy"
+                             referrerpolicy="no-referrer">
                         <div class="story-card-body">
                             <a asp-controller="Story" asp-action="Detail" asp-route-id="@s.Id"
                                class="story-title">@s.Title</a>

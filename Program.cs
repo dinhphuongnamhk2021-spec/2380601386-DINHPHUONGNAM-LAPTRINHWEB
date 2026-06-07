@@ -1,16 +1,69 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using DOANLAPTRINHWWEB.Data;
+using System.Security.Claims;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ── Đăng ký DbContext với SQL Server ──────────────────────────
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// ── MVC ───────────────────────────────────────────────────────
 builder.Services.AddControllersWithViews();
 
-// ── Session ─────────────────────────────────────────────────────
+builder.Services
+    .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Account/Login";
+    })
+    .AddOAuth("Google", options =>
+    {
+        options.ClientId = builder.Configuration["Authentication:Google:ClientId"] ?? "";
+        options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? "";
+        options.CallbackPath = "/signin-google";
+
+        options.AuthorizationEndpoint = "https://accounts.google.com/o/oauth2/v2/auth";
+        options.TokenEndpoint = "https://oauth2.googleapis.com/token";
+        options.UserInformationEndpoint = "https://www.googleapis.com/oauth2/v2/userinfo";
+
+        options.Scope.Add("email");
+        options.Scope.Add("profile");
+
+        options.Events.OnCreatingTicket = async context =>
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Get, context.Options.UserInformationEndpoint);
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", context.AccessToken);
+
+            using var response = await context.Backchannel.SendAsync(
+                request,
+                HttpCompletionOption.ResponseHeadersRead,
+                context.HttpContext.RequestAborted);
+            response.EnsureSuccessStatusCode();
+
+            using var payload = JsonDocument.Parse(
+                await response.Content.ReadAsStringAsync(context.HttpContext.RequestAborted));
+
+            var user = payload.RootElement;
+            var identity = (ClaimsIdentity)context.Principal!.Identity!;
+
+            if (user.TryGetProperty("id", out var id))
+            {
+                identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, id.GetString() ?? ""));
+            }
+
+            if (user.TryGetProperty("name", out var name))
+            {
+                identity.AddClaim(new Claim(ClaimTypes.Name, name.GetString() ?? ""));
+            }
+
+            if (user.TryGetProperty("email", out var email))
+            {
+                identity.AddClaim(new Claim(ClaimTypes.Email, email.GetString() ?? ""));
+            }
+        };
+    });
+
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
@@ -21,7 +74,6 @@ builder.Services.AddSession(options =>
 
 var app = builder.Build();
 
-// ── Middleware pipeline ───────────────────────────────────────
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -31,6 +83,7 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseRouting();
 app.UseSession();
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapStaticAssets();
 

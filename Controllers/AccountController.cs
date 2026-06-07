@@ -1,8 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using DOANLAPTRINHWWEB.Data;
 using DOANLAPTRINHWWEB.Models;
 using System.Security.Cryptography;
+using System.Security.Claims;
 using System.Text;
 
 namespace DOANLAPTRINHWWEB.Controllers;
@@ -10,10 +13,12 @@ namespace DOANLAPTRINHWWEB.Controllers;
 public class AccountController : Controller
 {
     private readonly AppDbContext _db;
+    private readonly IConfiguration _configuration;
 
-    public AccountController(AppDbContext db)
+    public AccountController(AppDbContext db, IConfiguration configuration)
     {
         _db = db;
+        _configuration = configuration;
     }
 
     // ── GET /Account/Login ───────────────────────────────────
@@ -56,6 +61,73 @@ public class AccountController : Controller
     }
 
     // ── GET /Account/Register ─────────────────────────────────
+    public IActionResult GoogleLogin(string? returnUrl = null)
+    {
+        var clientId = _configuration["Authentication:Google:ClientId"];
+        var clientSecret = _configuration["Authentication:Google:ClientSecret"];
+
+        if (string.IsNullOrWhiteSpace(clientId)
+            || string.IsNullOrWhiteSpace(clientSecret)
+            || clientId == "YOUR_GOOGLE_CLIENT_ID"
+            || clientSecret == "YOUR_GOOGLE_CLIENT_SECRET")
+        {
+            ViewBag.Error = "Google Login chưa được cấu hình. Vui lòng điền ClientId và ClientSecret thật trong appsettings.json.";
+            return View("Login");
+        }
+
+        var redirectUrl = Url.Action(nameof(GoogleCallback), "Account", new { returnUrl });
+        var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
+
+        return Challenge(properties, "Google");
+    }
+
+    public async Task<IActionResult> GoogleCallback(string? returnUrl = null)
+    {
+        var result = await HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        if (!result.Succeeded || result.Principal == null)
+        {
+            ViewBag.Error = "Không thể đăng nhập bằng Google. Vui lòng thử lại.";
+            return View("Login");
+        }
+
+        var email = result.Principal.FindFirstValue(ClaimTypes.Email);
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            ViewBag.Error = "Tài khoản Google chưa cung cấp email.";
+            return View("Login");
+        }
+
+        var displayName = result.Principal.FindFirstValue(ClaimTypes.Name);
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == email);
+
+        if (user == null)
+        {
+            user = new User
+            {
+                UserName = await CreateUniqueGoogleUserName(email, displayName),
+                Email = email,
+                PasswordHash = "GOOGLE_LOGIN",
+                Role = "User",
+                CreatedAt = DateTime.Now
+            };
+
+            _db.Users.Add(user);
+            await _db.SaveChangesAsync();
+        }
+
+        HttpContext.Session.SetInt32("UserId", user.Id);
+        HttpContext.Session.SetString("UserName", user.UserName);
+        HttpContext.Session.SetString("Role", user.Role);
+
+        if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
+        {
+            return Redirect(returnUrl);
+        }
+
+        return RedirectToAction("Index", "Story");
+    }
+
     public IActionResult Register()
     {
         return View();
@@ -112,9 +184,10 @@ public class AccountController : Controller
     }
 
     // ── GET /Account/Logout ──────────────────────────────────
-    public IActionResult Logout()
+    public async Task<IActionResult> Logout()
     {
         HttpContext.Session.Clear();
+        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         return RedirectToAction("Login");
     }
 
@@ -146,5 +219,32 @@ public class AccountController : Controller
         var bytes = Encoding.UTF8.GetBytes(password);
         var hash = sha256.ComputeHash(bytes);
         return Convert.ToBase64String(hash);
+    }
+
+    private async Task<string> CreateUniqueGoogleUserName(string email, string? displayName)
+    {
+        var rawName = !string.IsNullOrWhiteSpace(displayName)
+            ? displayName
+            : email.Split('@')[0];
+
+        var baseName = new string(rawName
+            .Where(char.IsLetterOrDigit)
+            .Take(40)
+            .ToArray());
+
+        if (string.IsNullOrWhiteSpace(baseName))
+        {
+            baseName = "googleuser";
+        }
+
+        var userName = baseName;
+        var suffix = 1;
+
+        while (await _db.Users.AnyAsync(u => u.UserName == userName))
+        {
+            userName = $"{baseName}{suffix++}";
+        }
+
+        return userName;
     }
 }
