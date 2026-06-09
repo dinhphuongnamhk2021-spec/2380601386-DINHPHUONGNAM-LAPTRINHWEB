@@ -135,7 +135,7 @@ public class AccountController : Controller
 
     // ── POST /Account/Register ────────────────────────────────
     [HttpPost]
-    public async Task<IActionResult> Register(string userName, string email, string password, string confirmPassword)
+    public async Task<IActionResult> Register(string userName, string email, string password, string confirmPassword, string role = "User")
     {
         if (string.IsNullOrEmpty(userName) || string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
         {
@@ -168,7 +168,7 @@ public class AccountController : Controller
             UserName = userName,
             Email = email,
             PasswordHash = HashPassword(password),
-            Role = "User",
+            Role = role == "Admin" ? "Admin" : "User",
             CreatedAt = DateTime.Now
         };
 

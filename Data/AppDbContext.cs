@@ -67,15 +67,15 @@ public class AppDbContext : DbContext
                 Id = 1, 
                 UserName = "admin", 
                 Email = "admin@doctruyen.com",
-                PasswordHash = "hashed_password_here",
+                PasswordHash = "jGl25bVBBBW96Qi9Te4V37Fnqchz/Eu4qB9vKrRIqRg=", // hash of "admin"
                 Role = "Admin",
                 CreatedAt = DateTime.Now.AddDays(-30)
             },
             new User { 
                 Id = 2, 
-                UserName = "user1", 
-                Email = "user1@doctruyen.com",
-                PasswordHash = "hashed_password_here",
+                UserName = "user", 
+                Email = "user@doctruyen.com",
+                PasswordHash = "BPiZbadjt6lpsQKO4wB1aerzpjVIbdqyEdUSyFud+Ps=", // hash of "user"
                 Role = "User",
                 CreatedAt = DateTime.Now.AddDays(-20)
             }
