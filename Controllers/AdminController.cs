@@ -262,6 +262,8 @@ public class AdminController : Controller
 
         if (ModelState.IsValid)
         {
+            // Reset Id to 0 because the route parameter 'id' (which is StoryId) might be incorrectly bound to chapter.Id
+            chapter.Id = 0; 
             chapter.CreatedAt = DateTime.Now;
             _db.Chapters.Add(chapter);
             await _db.SaveChangesAsync();

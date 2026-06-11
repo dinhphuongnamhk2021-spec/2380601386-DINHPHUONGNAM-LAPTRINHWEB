@@ -116,7 +116,8 @@ using (var scope = app.Services.CreateScope())
                 { "Thần Đạo Đan Tôn",        "/img/Thần Đạo Đan Tôn.jpeg" },
                 { "Thám Tử Lừng Danh Conan", "/img/Conan.jpg" },
                 { "Doraemon",                "/img/Doraemon.jpg" },
-                { "One Piece",               "/img/once pice.jpg" }
+                { "One Piece",               "/img/once pice.jpg" },
+                { "Vớt Thi Nhân",               "/img/Vớt Thi Nhân.jpg" }
             };
 
             foreach (var entry in coverMap)

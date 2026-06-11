@@ -593,21 +593,21 @@
             <div class="content-section">
                 <h2 class="section-title">Đánh Giá</h2>
                 <div class="text-center">
-                    <div class="rating-stars mb-2">
+                    <div class="rating-stars mb-2" id="interactive-rating" data-story-id="@Model.Id">
                         @for (int i = 1; i <= 5; i++)
                         {
                             if (i <= Math.Round(Model.Rating))
                             {
-                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-fill star-rating" data-value="@i" style="cursor: pointer; transition: color 0.2s;"></i>
                             }
                             else
                             {
-                                <i class="bi bi-star"></i>
+                                <i class="bi bi-star star-rating" data-value="@i" style="cursor: pointer; transition: color 0.2s;"></i>
                             }
                         }
                     </div>
-                    <div class="h3 mb-1">@Model.Rating.ToString("0.0")</div>
-                    <div class="text-muted">@Model.Ratings.Count đánh giá</div>
+                    <div class="h3 mb-1" id="rating-value-display">@Model.Rating.ToString("0.0")</div>
+                    <div class="text-muted"><span id="rating-count-display">@Model.Ratings.Count</span> đánh giá</div>
                 </div>
             </div>
         </div>
@@ -707,6 +707,67 @@
                 };
                 return text.replace(/[&<>"']/g, function(m) { return map[m]; });
             }
+
+            // --- Rating Logic ---
+            var isSubmittingRating = false;
+            
+            $('.star-rating').on('mouseenter', function() {
+                var value = $(this).data('value');
+                $('.star-rating').each(function() {
+                    if ($(this).data('value') <= value) {
+                        $(this).removeClass('bi-star').addClass('bi-star-fill');
+                    } else {
+                        $(this).removeClass('bi-star-fill').addClass('bi-star');
+                    }
+                });
+            }).on('mouseleave', function() {
+                // Reset to current actual rating if not submitted
+                var currentRating = parseFloat($('#rating-value-display').text());
+                var roundedRating = Math.round(currentRating);
+                $('.star-rating').each(function() {
+                    if ($(this).data('value') <= roundedRating) {
+                        $(this).removeClass('bi-star').addClass('bi-star-fill');
+                    } else {
+                        $(this).removeClass('bi-star-fill').addClass('bi-star');
+                    }
+                });
+            });
+
+            $('.star-rating').on('click', function() {
+                if (isSubmittingRating) return;
+                
+                var value = $(this).data('value');
+                var storyId = $('#interactive-rating').data('story-id');
+                isSubmittingRating = true;
+
+                $.ajax({
+                    url: '/Story/RateStory',
+                    type: 'POST',
+                    data: { storyId: storyId, score: value },
+                    success: function(response) {
+                        if (response.success) {
+                            $('#rating-value-display').text(response.newRating);
+                            $('#rating-count-display').text(response.ratingCount);
+                            // Also update the header stat
+                            $('.story-meta .meta-item:has(.bi-star-fill) span').text(response.newRating);
+                            $('.stats-grid .stat-card:nth-child(3) .stat-value').text(response.newRating);
+                            
+                            // Re-trigger mouseleave to set correct stars
+                            $('.star-rating').trigger('mouseleave');
+                            
+                            alert(response.message);
+                        } else {
+                            alert(response.message || 'Lỗi khi đánh giá.');
+                        }
+                    },
+                    error: function() {
+                        alert('Có lỗi xảy ra khi gửi đánh giá.');
+                    },
+                    complete: function() {
+                        isSubmittingRating = false;
+                    }
+                });
+            });
         });
     </script>
 }

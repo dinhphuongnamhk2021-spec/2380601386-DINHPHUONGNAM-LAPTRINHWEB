@@ -165,5 +165,47 @@ public class StoryController : Controller
             }
         });
     }
+
+    // ── POST /Story/RateStory ─────────────────────────────────
+    [HttpPost]
+    public async Task<IActionResult> RateStory(int storyId, int score)
+    {
+        if (score < 1 || score > 5)
+        {
+            return BadRequest(new { success = false, message = "Điểm đánh giá không hợp lệ." });
+        }
+
+        var rating = new Rating
+        {
+            StoryId = storyId,
+            Score = score
+        };
+
+        var sessionUser = HttpContext.Session.GetString("UserName");
+        if (!string.IsNullOrEmpty(sessionUser))
+        {
+            rating.UserName = sessionUser;
+        }
+        else
+        {
+            rating.UserName = "Ẩn danh";
+        }
+
+        _db.Ratings.Add(rating);
+        await _db.SaveChangesAsync();
+
+        // Calculate new rating metrics
+        var story = await _db.Stories.Include(s => s.Ratings).FirstOrDefaultAsync(s => s.Id == storyId);
+        double newRating = story?.Ratings.Any() == true ? Math.Round(story.Ratings.Average(r => r.Score), 1) : 0;
+        int ratingCount = story?.Ratings.Count ?? 0;
+
+        return Json(new
+        {
+            success = true,
+            newRating = newRating.ToString("0.0"),
+            ratingCount = ratingCount,
+            message = "Cảm ơn bạn đã đánh giá!"
+        });
+    }
 }
 
