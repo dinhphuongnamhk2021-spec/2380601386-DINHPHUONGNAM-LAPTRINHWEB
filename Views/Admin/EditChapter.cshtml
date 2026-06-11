@@ -1,0 +1,72 @@
+@model DOANLAPTRINHWWEB.Models.Chapter
+@{
+    ViewData["Title"] = "Sửa Chương";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+@section Styles {
+    <style>
+        .form-card {
+            background: #fff;
+            border-radius: 14px;
+            padding: 24px;
+            box-shadow: 0 4px 15px rgba(0,0,0,.03);
+            border: 1px solid rgba(0,0,0,.02);
+        }
+        .form-control:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(232,160,69,.15);
+        }
+    </style>
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="h3 mb-0 text-gray-800">Sửa Chương</h2>
+    <a asp-action="Chapters" asp-route-id="@Model.StoryId" class="btn btn-outline-secondary shadow-sm">
+        <i class="bi bi-arrow-left"></i> Trở về danh sách
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="form-card">
+            <h5 class="mb-4 text-primary">Truyện: @ViewBag.StoryTitle</h5>
+            
+            <form method="post" asp-action="EditChapter">
+                <input type="hidden" name="Id" value="@Model.Id" />
+                <input type="hidden" name="StoryId" value="@Model.StoryId" />
+                <input type="hidden" name="CreatedAt" value="@Model.CreatedAt" />
+                
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label asp-for="ChapterNumber" class="form-label fw-bold">Chương số *</label>
+                        <input asp-for="ChapterNumber" class="form-control" type="number" min="1" required />
+                        <span asp-validation-for="ChapterNumber" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-9 mb-3">
+                        <label asp-for="Title" class="form-label fw-bold">Tiêu đề chương *</label>
+                        <input asp-for="Title" class="form-control" placeholder="Ví dụ: Kẻ Xuyên Không" required maxlength="200" />
+                        <span asp-validation-for="Title" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="Content" class="form-label fw-bold">Nội dung chương *</label>
+                    <textarea asp-for="Content" class="form-control" rows="15" required placeholder="Nhập nội dung truyện tại đây..."></textarea>
+                    <span asp-validation-for="Content" class="text-danger small"></span>
+                </div>
+
+                <div class="text-end mt-4">
+                    <a asp-action="Chapters" asp-route-id="@Model.StoryId" class="btn btn-light px-4 py-2 me-2 border">Hủy Bỏ</a>
+                    <button type="submit" class="btn btn-primary px-4 py-2" style="background: var(--gold); border-color: var(--gold); color: #111122; font-weight: 600;">
+                        <i class="bi bi-save me-1"></i> Cập Nhật Chương
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

@@ -208,6 +208,137 @@ public class AdminController : Controller
 
         return RedirectToAction("Stories");
     }
+
+    // ── GET /Admin/Chapters/5 (StoryId) ───────────────────────
+    public async Task<IActionResult> Chapters(int id)
+    {
+        var role = HttpContext.Session.GetString("Role");
+        if (role != "Admin")
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
+        var story = await _db.Stories
+            .Include(s => s.Chapters)
+            .FirstOrDefaultAsync(s => s.Id == id);
+
+        if (story == null) return NotFound();
+
+        return View(story);
+    }
+
+    // ── GET /Admin/CreateChapter/5 (StoryId) ──────────────────
+    public async Task<IActionResult> CreateChapter(int id)
+    {
+        var role = HttpContext.Session.GetString("Role");
+        if (role != "Admin")
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
+        var story = await _db.Stories.FindAsync(id);
+        if (story == null) return NotFound();
+
+        ViewBag.StoryTitle = story.Title;
+        ViewBag.StoryId = story.Id;
+        
+        var nextChapterNumber = await _db.Chapters.Where(c => c.StoryId == id).MaxAsync(c => (int?)c.ChapterNumber) ?? 0;
+        
+        return View(new Chapter { StoryId = id, ChapterNumber = nextChapterNumber + 1 });
+    }
+
+    // ── POST /Admin/CreateChapter ─────────────────────────────
+    [HttpPost]
+    public async Task<IActionResult> CreateChapter(Chapter chapter)
+    {
+        var role = HttpContext.Session.GetString("Role");
+        if (role != "Admin")
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
+        ModelState.Remove("Story");
+        ModelState.Remove("Comments");
+
+        if (ModelState.IsValid)
+        {
+            chapter.CreatedAt = DateTime.Now;
+            _db.Chapters.Add(chapter);
+            await _db.SaveChangesAsync();
+            return RedirectToAction("Chapters", new { id = chapter.StoryId });
+        }
+
+        var story = await _db.Stories.FindAsync(chapter.StoryId);
+        if (story != null) ViewBag.StoryTitle = story.Title;
+        ViewBag.StoryId = chapter.StoryId;
+        return View(chapter);
+    }
+
+    // ── GET /Admin/EditChapter/5 ──────────────────────────────
+    public async Task<IActionResult> EditChapter(int id)
+    {
+        var role = HttpContext.Session.GetString("Role");
+        if (role != "Admin")
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
+        var chapter = await _db.Chapters.Include(c => c.Story).FirstOrDefaultAsync(c => c.Id == id);
+        if (chapter == null) return NotFound();
+
+        ViewBag.StoryTitle = chapter.Story?.Title;
+        return View(chapter);
+    }
+
+    // ── POST /Admin/EditChapter/5 ─────────────────────────────
+    [HttpPost]
+    public async Task<IActionResult> EditChapter(Chapter chapter)
+    {
+        var role = HttpContext.Session.GetString("Role");
+        if (role != "Admin")
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
+        ModelState.Remove("Story");
+        ModelState.Remove("Comments");
+
+        if (ModelState.IsValid)
+        {
+            var existingChapter = await _db.Chapters.FindAsync(chapter.Id);
+            if (existingChapter == null) return NotFound();
+
+            existingChapter.Title = chapter.Title;
+            existingChapter.ChapterNumber = chapter.ChapterNumber;
+            existingChapter.Content = chapter.Content;
+
+            await _db.SaveChangesAsync();
+            return RedirectToAction("Chapters", new { id = chapter.StoryId });
+        }
+
+        var story = await _db.Stories.FindAsync(chapter.StoryId);
+        if (story != null) ViewBag.StoryTitle = story.Title;
+        return View(chapter);
+    }
+
+    // ── GET /Admin/DeleteChapter/5 ────────────────────────────
+    public async Task<IActionResult> DeleteChapter(int id)
+    {
+        var role = HttpContext.Session.GetString("Role");
+        if (role != "Admin")
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
+        var chapter = await _db.Chapters.FindAsync(id);
+        if (chapter == null) return NotFound();
+
+        int storyId = chapter.StoryId;
+        _db.Chapters.Remove(chapter);
+        await _db.SaveChangesAsync();
+
+        return RedirectToAction("Chapters", new { id = storyId });
+    }
 }
 
 public class AdminViewModel

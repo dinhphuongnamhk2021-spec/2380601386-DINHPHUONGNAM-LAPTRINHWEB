@@ -120,4 +120,50 @@ public class StoryController : Controller
 
         return View(chapter);
     }
+
+    // ── POST /Story/PostComment ──────────────────────────────
+    [HttpPost]
+    public async Task<IActionResult> PostComment(int storyId, string? userName, string content)
+    {
+        if (string.IsNullOrWhiteSpace(content))
+        {
+            return BadRequest(new { success = false, message = "Nội dung bình luận không được để trống." });
+        }
+
+        var comment = new Comment
+        {
+            StoryId = storyId,
+            Content = content.Trim(),
+            CreatedAt = DateTime.Now
+        };
+
+        var sessionUser = HttpContext.Session.GetString("UserName");
+        if (!string.IsNullOrEmpty(sessionUser))
+        {
+            comment.UserName = sessionUser;
+        }
+        else if (!string.IsNullOrWhiteSpace(userName))
+        {
+            comment.UserName = userName.Trim();
+        }
+        else
+        {
+            comment.UserName = "Ẩn danh";
+        }
+
+        _db.Comments.Add(comment);
+        await _db.SaveChangesAsync();
+
+        return Json(new
+        {
+            success = true,
+            comment = new
+            {
+                userName = comment.UserName,
+                content = comment.Content,
+                createdAt = comment.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+            }
+        });
+    }
 }
+

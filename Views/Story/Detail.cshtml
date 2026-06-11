@@ -234,6 +234,141 @@
         .story-info h1 { font-size: 1.5rem; }
         .story-cover { max-width: 200px; margin: 0 auto 20px; }
     }
+
+    /* ── Comment Section Styles ── */
+    .comment-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--gold) 0%, var(--gold-soft) 100%);
+        color: var(--ink);
+        font-weight: 700;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        box-shadow: 0 3px 6px rgba(0,0,0,.15);
+    }
+    
+    .comment-form-container {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 24px;
+        background: #f9fafb;
+        padding: 20px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+    }
+    
+    .comment-form-body {
+        flex: 1;
+    }
+    
+    .comment-input {
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 12px;
+        width: 100%;
+        min-height: 80px;
+        resize: vertical;
+        font-size: .95rem;
+        transition: all .2s;
+    }
+    
+    .comment-input:focus {
+        border-color: var(--gold);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(232,160,69,.15);
+    }
+    
+    .comment-btn-submit {
+        background: var(--ink);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 8px 20px;
+        font-weight: 600;
+        font-size: .9rem;
+        transition: all .2s;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    
+    .comment-btn-submit:hover {
+        background: var(--gold);
+        color: var(--ink);
+        box-shadow: 0 4px 12px rgba(232,160,69,.25);
+    }
+    
+    .comment-list {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        margin-top: 16px;
+    }
+    
+    .comment-item {
+        display: flex;
+        gap: 16px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #f3f4f6;
+        animation: fadeIn 0.5s ease-out;
+    }
+    
+    .comment-item:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+    
+    .comment-item-body {
+        flex: 1;
+    }
+    
+    .comment-item-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 6px;
+    }
+    
+    .comment-author {
+        font-weight: 600;
+        color: var(--ink);
+        font-size: .95rem;
+    }
+    
+    .comment-time {
+        font-size: .8rem;
+        color: var(--muted);
+    }
+    
+    .comment-text {
+        color: #4b5563;
+        font-size: .92rem;
+        line-height: 1.5;
+        white-space: pre-line;
+    }
+    
+    .empty-comment-placeholder {
+        text-align: center;
+        padding: 32px 16px;
+        color: var(--muted);
+    }
+    
+    .empty-comment-placeholder i {
+        font-size: 2.5rem;
+        color: #e5e7eb;
+        display: block;
+        margin-bottom: 12px;
+    }
+    
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
 </style>
 
 @* ─── DETAIL HEADER ─────────────────────────────────────────────────────────── *@
@@ -345,6 +480,89 @@
                     <p class="text-muted">Chưa có chương nào.</p>
                 }
             </div>
+
+            @* Comment Section *@
+            <div class="content-section" id="comment-section">
+                <h2 class="section-title">
+                    <i class="bi bi-chat-left-text me-2"></i>Bình Luận 
+                    (<span id="comment-count-header">@Model.Comments.Count</span>)
+                </h2>
+
+                <!-- Comment Form -->
+                <div class="comment-form-container">
+                    @{
+                        var loggedInUser = Context.Session.GetString("UserName");
+                        var initialLetter = !string.IsNullOrEmpty(loggedInUser) 
+                            ? loggedInUser[0].ToString().ToUpper() 
+                            : "?";
+                    }
+                    <div class="comment-avatar" id="form-avatar">@initialLetter</div>
+                    <form id="commentForm" class="comment-form-body" method="post" asp-controller="Story" asp-action="PostComment">
+                        <input type="hidden" name="storyId" value="@Model.Id" />
+                        
+                        @if (string.IsNullOrEmpty(loggedInUser))
+                        {
+                            <div class="row mb-2">
+                                <div class="col-md-6 col-sm-12">
+                                    <input type="text" id="guestNameInput" name="userName" class="form-control form-control-sm" placeholder="Tên hiển thị (mặc định: Ẩn danh)" maxlength="50" />
+                                </div>
+                                <div class="col-md-6 col-sm-12 d-flex align-items-center mt-2 mt-md-0">
+                                    <span class="text-muted" style="font-size: .8rem;">
+                                        <i class="bi bi-info-circle me-1"></i>Đăng nhập để tự động lưu tên tài khoản của bạn.
+                                    </span>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="mb-2">
+                                <span class="fw-semibold text-dark" style="font-size: .9rem;">
+                                    Đang bình luận dưới tên: <span class="text-primary">@loggedInUser</span>
+                                </span>
+                            </div>
+                        }
+
+                        <div class="mb-3">
+                            <textarea id="commentContent" name="content" class="comment-input" placeholder="Chia sẻ cảm nghĩ của bạn về truyện..." rows="3" required></textarea>
+                        </div>
+                        <div class="text-end">
+                            <button type="submit" class="comment-btn-submit">
+                                <i class="bi bi-send-fill"></i>Gửi bình luận
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Comment List -->
+                <div class="comment-list" id="commentList">
+                    @if (Model.Comments.Any())
+                    {
+                        foreach (var comment in Model.Comments.OrderByDescending(c => c.CreatedAt))
+                        {
+                            var commentInitial = !string.IsNullOrEmpty(comment.UserName) 
+                                ? comment.UserName[0].ToString().ToUpper() 
+                                : "?";
+                            <div class="comment-item">
+                                <div class="comment-avatar">@commentInitial</div>
+                                <div class="comment-item-body">
+                                    <div class="comment-item-header">
+                                        <span class="comment-author">@comment.UserName</span>
+                                        <span class="comment-time">@comment.CreatedAt.ToString("dd/MM/yyyy HH:mm")</span>
+                                    </div>
+                                    <div class="comment-text">@comment.Content</div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="empty-comment-placeholder" id="emptyComments">
+                            <i class="bi bi-chat-dots"></i>
+                            Chưa có bình luận nào. Hãy là người đầu tiên chia sẻ ý kiến của bạn!
+                        </div>
+                    }
+                </div>
+            </div>
         </div>
 
         <div class="col-lg-4">
@@ -365,7 +583,7 @@
                         <div class="stat-label">Đánh giá</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-value">@Model.Comments.Count</div>
+                        <div class="stat-value" id="comment-count-stat">@Model.Comments.Count</div>
                         <div class="stat-label">Bình luận</div>
                     </div>
                 </div>
@@ -395,3 +613,100 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Cập nhật avatar khi gõ tên khách (Guest)
+            $('#guestNameInput').on('input', function() {
+                var val = $(this).val().trim();
+                var letter = val ? val.charAt(0).toUpperCase() : '?';
+                $('#form-avatar').text(letter);
+            });
+
+            // Gửi form qua AJAX
+            $('#commentForm').on('submit', function(e) {
+                e.preventDefault();
+
+                var $form = $(this);
+                var content = $('#commentContent').val().trim();
+                
+                if (!content) {
+                    alert('Vui lòng nhập nội dung bình luận.');
+                    return;
+                }
+
+                var formData = $form.serialize();
+
+                // Disable submit button during load
+                var $btn = $form.find('.comment-btn-submit');
+                $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Đang gửi...');
+
+                $.ajax({
+                    url: $form.attr('action'),
+                    type: 'POST',
+                    data: formData,
+                    success: function(response) {
+                        if (response.success) {
+                            // Xóa nội dung textarea
+                            $('#commentContent').val('');
+                            
+                            // Ẩn placeholder trống
+                            $('#emptyComments').hide();
+
+                            // Tạo DOM bình luận mới
+                            var c = response.comment;
+                            var initial = c.userName ? c.userName.charAt(0).toUpperCase() : '?';
+                            var newCommentHtml = `
+                                <div class="comment-item">
+                                    <div class="comment-avatar">${initial}</div>
+                                    <div class="comment-item-body">
+                                        <div class="comment-item-header">
+                                            <span class="comment-author">${c.userName}</span>
+                                            <span class="comment-time">${c.createdAt}</span>
+                                        </div>
+                                        <div class="comment-text">${escapeHtml(c.content)}</div>
+                                    </div>
+                                </div>
+                            `;
+
+                            // Chèn lên đầu danh sách bình luận
+                            $('#commentList').prepend(newCommentHtml);
+
+                            // Cập nhật số lượng bình luận ở các nơi
+                            var currentCount = parseInt($('#comment-count-header').text()) || 0;
+                            var newCount = currentCount + 1;
+                            $('#comment-count-header').text(newCount);
+                            $('#comment-count-stat').text(newCount);
+                        } else {
+                            alert(response.message || 'Gửi bình luận thất bại. Vui lòng thử lại.');
+                        }
+                    },
+                    error: function(xhr) {
+                        var errorMsg = 'Có lỗi xảy ra khi gửi bình luận.';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMsg = xhr.responseJSON.message;
+                        }
+                        alert(errorMsg);
+                    },
+                    complete: function() {
+                        // Re-enable submit button
+                        $btn.prop('disabled', false).html('<i class="bi bi-send-fill"></i>Gửi bình luận');
+                    }
+                });
+            });
+
+            // Hàm tránh XSS
+            function escapeHtml(text) {
+                var map = {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                };
+                return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+            }
+        });
+    </script>
+}

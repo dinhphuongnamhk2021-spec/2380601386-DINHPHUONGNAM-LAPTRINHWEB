@@ -1,0 +1,73 @@
+@model DOANLAPTRINHWWEB.Models.Story
+@{
+    ViewData["Title"] = "Quản Lý Chương";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="h3 mb-0 text-gray-800">Quản Lý Chương</h2>
+        <p class="text-muted mt-1">Truyện: <strong>@Model.Title</strong></p>
+    </div>
+    <div>
+        <a asp-action="CreateChapter" asp-route-id="@Model.Id" class="btn btn-primary shadow-sm" style="background: var(--gold); border-color: var(--gold); color: #111122; font-weight: 600;">
+            <i class="bi bi-plus-circle fa-sm text-dark-50"></i> Thêm Chương Mới
+        </a>
+        <a asp-action="EditStory" asp-route-id="@Model.Id" class="btn btn-outline-secondary ms-2 shadow-sm">
+            <i class="bi bi-arrow-left"></i> Quay lại truyện
+        </a>
+    </div>
+</div>
+
+<div class="card shadow mb-4" style="border-radius: 12px; overflow: hidden; border: none;">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead style="background-color: #f8f9fa;">
+                    <tr>
+                        <th class="px-4 py-3 text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Chương Số</th>
+                        <th class="px-4 py-3 text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Tiêu Đề Chương</th>
+                        <th class="px-4 py-3 text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Ngày Đăng</th>
+                        <th class="px-4 py-3 text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Hành Động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Chapters != null && Model.Chapters.Any())
+                    {
+                        foreach (var chapter in Model.Chapters.OrderBy(c => c.ChapterNumber))
+                        {
+                            <tr>
+                                <td class="px-4 py-3">
+                                    <span class="badge bg-secondary">@chapter.ChapterNumber</span>
+                                </td>
+                                <td class="px-4 py-3 fw-medium">
+                                    @chapter.Title
+                                </td>
+                                <td class="px-4 py-3 text-muted small">
+                                    @chapter.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                                </td>
+                                <td class="px-4 py-3 text-center">
+                                    <a asp-action="EditChapter" asp-route-id="@chapter.Id" class="btn btn-sm btn-outline-primary" title="Sửa">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a asp-action="DeleteChapter" asp-route-id="@chapter.Id" class="btn btn-sm btn-outline-danger ms-1" onclick="return confirm('Bạn có chắc chắn muốn xóa chương này?');" title="Xóa">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4" class="text-center py-5 text-muted">
+                                <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                                Chưa có chương nào cho truyện này.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

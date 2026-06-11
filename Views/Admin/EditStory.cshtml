@@ -1,195 +1,241 @@
 @model DOANLAPTRINHWWEB.Models.Story
 @{
-    ViewData["Title"] = "Sửa Truyện - Admin";
+    ViewData["Title"] = "Chỉnh Sửa Truyện";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
     var genres = ViewBag.Genres as List<DOANLAPTRINHWWEB.Models.Genre> ?? new List<DOANLAPTRINHWWEB.Models.Genre>();
     var selectedGenreIds = Model?.StoryGenres?.Select(sg => sg.GenreId).ToList() ?? new List<int>();
 }
 
-@* ─── CSS riêng cho trang này ───────────────────────────────────────────── *@
-<style>
-    :root {
-        --ink: #1a1a2e;
-        --ink2: #16213e;
-        --gold: #e8a045;
-        --gold-soft: #f5c878;
-        --muted: #6b7280;
-        --card-bg: #ffffff;
-        --border: #e5e7eb;
-    }
+@section Styles {
+    <style>
+        .form-card {
+            background: #fff;
+            border-radius: 14px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 15px rgba(0,0,0,.03);
+            border: 1px solid rgba(0,0,0,.02);
+        }
+        
+        .form-card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--ink);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #f3f4f6;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
 
-    .admin-header {
-        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-        padding: 30px 0;
-        color: #fff;
-        position: relative;
-        overflow: hidden;
-    }
-    .admin-header::before {
-        content: '';
-        position: absolute; inset: 0;
-        background: radial-gradient(ellipse 80% 60% at 60% 50%, rgba(232,160,69,.12) 0%, transparent 70%);
-        pointer-events: none;
-    }
+        .form-label {
+            font-weight: 600;
+            font-size: .88rem;
+            color: #374151;
+            margin-bottom: 8px;
+        }
 
-    .admin-title {
-        font-family: 'Playfair Display', serif;
-        font-size: 2rem;
-        font-weight: 700;
-        margin-bottom: 8px;
-    }
-    .admin-title span {
-        color: var(--gold);
-    }
+        .form-control, .form-select {
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            padding: 10px 14px;
+            font-size: .92rem;
+            transition: all .2s;
+        }
 
-    .content-section {
-        background: #fff;
-        border-radius: 12px;
-        padding: 24px;
-        margin-bottom: 24px;
-        box-shadow: 0 2px 8px rgba(0,0,0,.06);
-    }
+        .form-control:focus, .form-select:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(232,160,69,.15);
+        }
 
-    .section-title {
-        font-family: 'Playfair Display', serif;
-        font-size: 1.3rem;
-        font-weight: 700;
-        color: var(--ink);
-        margin-bottom: 16px;
-        padding-bottom: 12px;
-        border-bottom: 2px solid var(--gold);
-    }
+        /* Modern Genre List */
+        .genre-card-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 10px;
+        }
+        
+        .genre-card-item {
+            background: #f9fafb;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all .15s ease;
+            user-select: none;
+        }
 
-    .form-label {
-        font-weight: 600;
-        color: var(--ink);
-        margin-bottom: 8px;
-    }
+        .genre-card-item:hover {
+            background: #f3f4f6;
+            border-color: #d1d5db;
+        }
 
-    .form-control, .form-select {
-        border-radius: 8px;
-        border: 1px solid var(--border);
-        padding: 10px 14px;
-        transition: all .15s;
-    }
-    .form-control:focus, .form-select:focus {
-        border-color: var(--gold);
-        box-shadow: 0 0 0 3px rgba(232,160,69,.2);
-    }
+        .genre-card-item input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--gold);
+            cursor: pointer;
+            margin: 0;
+        }
 
-    .genre-checkbox {
-        display: inline-flex;
-        align-items: center;
-        margin-right: 16px;
-        margin-bottom: 8px;
-    }
-    .genre-checkbox input {
-        margin-right: 6px;
-    }
+        .genre-card-item span {
+            font-size: .85rem;
+            font-weight: 500;
+            color: #4b5563;
+        }
 
-    .btn-primary {
-        background: var(--gold);
-        border-color: var(--gold);
-        color: #1a1a2e;
-    }
-    .btn-primary:hover {
-        background: var(--gold-soft);
-        border-color: var(--gold-soft);
-    }
-</style>
+        /* Image Preview Box */
+        .preview-box {
+            aspect-ratio: 3/4;
+            max-width: 120px;
+            border-radius: 8px;
+            background: #f3f4f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            margin: 0 auto;
+        }
 
-@* Google Font Playfair Display *@
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
-@* Bootstrap Icons *@
-<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+        .preview-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
 
-@* ─── ADMIN HEADER ─────────────────────────────────────────────────────────────── *@
-<div class="admin-header">
-    <div class="container">
-        <h1 class="admin-title">Sửa <span>Truyện</span></h1>
-    </div>
-</div>
+        .preview-box i {
+            font-size: 2rem;
+            color: #d1d5db;
+        }
+    </style>
+}
 
-@* ─── MAIN CONTENT ───────────────────────────────────────────────────────────── *@
-<div class="container py-4">
-    <div class="content-section">
-        <div class="section-title">
-            <span><i class="bi bi-pencil me-2"></i>Chỉnh Sửa Truyện</span>
+<form method="post" id="editStoryForm">
+    <input type="hidden" name="Id" value="@Model?.Id" />
+    <div class="row">
+        <!-- Left Column: Details & Settings -->
+        <div class="col-lg-8">
+            <!-- General Info Card -->
+            <div class="form-card">
+                <div class="form-card-title">
+                    <i class="bi bi-pencil-square text-primary"></i> Thông Tin Truyện
+                </div>
+                
+                <div class="mb-3">
+                    <label for="Title" class="form-label">Tiêu đề truyện *</label>
+                    <input type="text" class="form-control" id="Title" name="Title" 
+                           value="@Model?.Title" required maxlength="200">
+                </div>
+
+                <div class="mb-3">
+                    <label for="AuthorName" class="form-label">Tác giả *</label>
+                    <input type="text" class="form-control" id="AuthorName" name="AuthorName" 
+                           value="@Model?.AuthorName" required maxlength="100">
+                </div>
+
+                <div class="mb-0">
+                    <label for="Description" class="form-label">Mô tả tóm tắt</label>
+                    <textarea class="form-control" id="Description" name="Description" rows="5" 
+                              maxlength="2000">@Model?.Description</textarea>
+                </div>
+            </div>
+
+            <!-- Settings Card with Live Preview -->
+            <div class="form-card">
+                <div class="form-card-title">
+                    <i class="bi bi-gear text-primary"></i> Cấu Hình & Ảnh Bìa
+                </div>
+
+                <div class="row align-items-center mb-3">
+                    <div class="col-md-9 col-sm-12 mb-3 mb-md-0">
+                        <label for="CoverImage" class="form-label">Đường dẫn ảnh bìa</label>
+                        <input type="text" class="form-control" id="CoverImage" name="CoverImage" 
+                               value="@Model?.CoverImage" required>
+                    </div>
+                    <div class="col-md-3 col-sm-12 text-center">
+                        <div class="preview-box">
+                            <img id="coverPreview" src="@(Model?.CoverImage ?? "/images/default-cover.jpg")" alt="Cover Preview" onerror="this.src='/images/default-cover.jpg'; this.onerror=null;" referrerpolicy="no-referrer" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="Status" class="form-label">Trạng thái phát hành</label>
+                        <select class="form-select" id="Status" name="Status">
+                            <option value="Đang ra" selected="@(Model?.Status == "Đang ra")">Đang ra</option>
+                            <option value="Hoàn thành" selected="@(Model?.Status == "Hoàn thành")">Hoàn thành</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="ViewCount" class="form-label">Lượt xem</label>
+                        <input type="number" class="form-control" id="ViewCount" name="ViewCount" 
+                               value="@Model?.ViewCount" min="0">
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <form method="post" enctype="multipart/form-data">
-            <div class="row">
-                <div class="col-md-8">
-                    <div class="mb-3">
-                        <label for="Title" class="form-label">Tiêu đề *</label>
-                        <input type="text" class="form-control" id="Title" name="Title" 
-                               value="@Model?.Title" required maxlength="200">
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="AuthorName" class="form-label">Tác giả *</label>
-                        <input type="text" class="form-control" id="AuthorName" name="AuthorName" 
-                               value="@Model?.AuthorName" required maxlength="100">
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="Description" class="form-label">Mô tả</label>
-                        <textarea class="form-control" id="Description" name="Description" rows="4" 
-                                  maxlength="2000">@Model?.Description</textarea>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="CoverImage" class="form-label">Ảnh bìa</label>
-                        <input type="text" class="form-control" id="CoverImage" name="CoverImage" 
-                               value="@Model?.CoverImage" placeholder="/images/default-cover.jpg">
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="Status" class="form-label">Trạng thái</label>
-                            <select class="form-select" id="Status" name="Status">
-                                <option value="Đang ra" selected="@(Model?.Status == "Đang ra")">Đang ra</option>
-                                <option value="Hoàn thành" selected="@(Model?.Status == "Hoàn thành")">Hoàn thành</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="ViewCount" class="form-label">Lượt xem</label>
-                            <input type="number" class="form-control" id="ViewCount" name="ViewCount" 
-                                   value="@Model?.ViewCount" min="0">
-                        </div>
-                    </div>
+        <!-- Right Column: Genres -->
+        <div class="col-lg-4">
+            <div class="form-card">
+                <div class="form-card-title">
+                    <i class="bi bi-tags text-primary"></i> Thể Loại
                 </div>
-
-                <div class="col-md-4">
-                    <div class="mb-3">
-                        <label class="form-label">Thể loại</label>
-                        <div>
-                            @foreach (var genre in genres)
-                            {
-                                <label class="genre-checkbox">
-                                    <input type="checkbox" name="selectedGenres" value="@genre.Id" 
-                                           @(selectedGenreIds.Contains(genre.Id) ? "checked" : "")>
-                                    @genre.Name
-                                </label>
-                            }
-                        </div>
+                
+                @if (genres.Any())
+                {
+                    <div class="genre-card-list">
+                        @foreach (var genre in genres)
+                        {
+                            <label class="genre-card-item">
+                                <input type="checkbox" name="selectedGenres" value="@genre.Id" 
+                                       @(selectedGenreIds.Contains(genre.Id) ? "checked" : "")>
+                                <span>@genre.Name</span>
+                            </label>
+                        }
                     </div>
-                </div>
+                }
+                else
+                {
+                    <p class="text-muted small">Không tìm thấy thể loại nào.</p>
+                }
             </div>
 
-            <div class="mt-4">
-                <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-check-circle me-2"></i>Cập Nhật Truyện
+            <!-- Submit Button Card -->
+            <div class="form-card text-center">
+                <a asp-action="Chapters" asp-route-id="@Model?.Id" class="btn btn-info w-100 mb-3 py-2 fw-semibold text-white" style="background: #17a2b8; border-color: #17a2b8;">
+                    <i class="bi bi-list-ol me-2"></i> Quản Lý Chương
+                </a>
+                <hr class="my-3 text-muted" />
+                <button type="submit" class="btn btn-primary w-100 mb-2 py-2 fw-semibold" style="background: var(--gold); border-color: var(--gold); color: #111122;">
+                    <i class="bi bi-check-circle me-2"></i> Cập Nhật Truyện
                 </button>
-                <a asp-action="Stories" class="btn btn-outline-secondary">
-                    <i class="bi bi-x-circle me-2"></i>Hủy
+                <a asp-action="Stories" class="btn btn-outline-secondary w-100 py-2 fw-medium">
+                    <i class="bi bi-x-circle me-2"></i> Hủy Bỏ
                 </a>
             </div>
-        </form>
+        </div>
     </div>
+</form>
 
-    <div class="mt-3">
-        <a asp-action="Stories" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left me-2"></i>Quay lại danh sách
-        </a>
-    </div>
-</div>
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Live cover preview
+            $('#CoverImage').on('input change', function() {
+                var url = $(this).val().trim();
+                if (url) {
+                    $('#coverPreview').attr('src', url).show();
+                } else {
+                    $('#coverPreview').attr('src', '/images/default-cover.jpg');
+                }
+            });
+        });
+    </script>
+}

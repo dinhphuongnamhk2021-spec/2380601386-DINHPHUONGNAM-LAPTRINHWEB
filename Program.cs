@@ -99,4 +99,42 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
 
+// Auto-update cover images in database on startup
+using (var scope = app.Services.CreateScope())
+{
+    try
+    {
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        if (db.Stories.Any())
+        {
+            var coverMap = new Dictionary<string, string>
+            {
+                { "Đấu Phá Thương Khung",    "/img/Đấu Phá Thương Khung.jpg" },
+                { "Vũ Luyện Đỉnh Phong",     "/img/Vũ Luyện Đỉnh Phong.jpg" },
+                { "Nguyên Tôn",              "/img/Nguyên Tôn.jpg" },
+                { "Phàm Nhân Tu Tiên",       "/img/Phàm Nhân Tu Tiên.jpg" },
+                { "Thần Đạo Đan Tôn",        "/img/Thần Đạo Đan Tôn.jpeg" },
+                { "Thám Tử Lừng Danh Conan", "/img/Conan.jpg" },
+                { "Doraemon",                "/img/Doraemon.jpg" },
+                { "One Piece",               "/img/once pice.jpg" }
+            };
+
+            foreach (var entry in coverMap)
+            {
+                var story = db.Stories.FirstOrDefault(s => s.Title == entry.Key);
+                if (story != null && story.CoverImage != entry.Value)
+                {
+                    story.CoverImage = entry.Value;
+                }
+            }
+
+            db.SaveChanges();
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error updating story cover images: {ex.Message}");
+    }
+}
+
 app.Run();
