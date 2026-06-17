@@ -1,0 +1,773 @@
+@model DOANLAPTRINHWWEB.Models.Story
+@{
+    ViewData["Title"] = Model.Title + " - DocTruyen";
+}
+
+@* ─── CSS riêng cho trang này ───────────────────────────────────────────── *@
+<style>
+    :root {
+        --ink: #1a1a2e;
+        --ink2: #16213e;
+        --gold: #e8a045;
+        --gold-soft: #f5c878;
+        --muted: #6b7280;
+        --card-bg: #ffffff;
+        --border: #e5e7eb;
+    }
+
+    .detail-header {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        padding: 40px 0;
+        color: #fff;
+        position: relative;
+        overflow: hidden;
+    }
+    .detail-header::before {
+        content: '';
+        position: absolute; inset: 0;
+        background: radial-gradient(ellipse 80% 60% at 60% 50%, rgba(232,160,69,.12) 0%, transparent 70%);
+        pointer-events: none;
+    }
+
+    .story-cover {
+        aspect-ratio: 3/4;
+        border-radius: 12px;
+        overflow: hidden;
+        background: linear-gradient(135deg, #1a1a2e, #0f3460);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 8px 24px rgba(0,0,0,.3);
+    }
+    .story-cover img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .story-cover i {
+        font-size: 4rem;
+        color: rgba(255,255,255,.3);
+    }
+
+    .story-info h1 {
+        font-family: 'Playfair Display', serif;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 12px;
+        color: #fff;
+    }
+    .story-info .author-name {
+        color: rgba(255,255,255,.7);
+        font-size: 1rem;
+        margin-bottom: 16px;
+    }
+    .story-info .author-name span {
+        color: var(--gold);
+        font-weight: 600;
+    }
+
+    .story-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: rgba(255,255,255,.8);
+        font-size: .9rem;
+    }
+    .meta-item i {
+        color: var(--gold);
+    }
+
+    .story-genres {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 20px;
+    }
+    .genre-badge {
+        background: rgba(232,160,69,.2);
+        color: var(--gold);
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: .85rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all .2s;
+    }
+    .genre-badge:hover {
+        background: rgba(232,160,69,.3);
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: .85rem;
+        font-weight: 600;
+    }
+    .status-ongoing {
+        background: rgba(59, 130, 246, .2);
+        color: #60a5fa;
+    }
+    .status-completed {
+        background: rgba(34, 197, 94, .2);
+        color: #4ade80;
+    }
+
+    .btn-read {
+        background: var(--gold);
+        color: #1a1a2e;
+        font-weight: 700;
+        border: none;
+        border-radius: 10px;
+        padding: 12px 32px;
+        transition: all .2s;
+        text-decoration: none;
+        display: inline-block;
+    }
+    .btn-read:hover {
+        background: var(--gold-soft);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(232,160,69,.4);
+    }
+
+    .content-section {
+        background: #fff;
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 24px;
+        box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    }
+
+    .section-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--ink);
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid var(--gold);
+    }
+
+    .description-text {
+        color: #374151;
+        line-height: 1.8;
+        font-size: 1rem;
+    }
+
+    .chapter-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    .chapter-item {
+        display: flex;
+        align-items: center;
+        padding: 12px 16px;
+        border-bottom: 1px solid #f3f4f6;
+        transition: all .15s;
+        text-decoration: none;
+        color: #374151;
+    }
+    .chapter-item:hover {
+        background: #f9fafb;
+        color: var(--gold);
+    }
+    .chapter-number {
+        background: var(--ink);
+        color: #fff;
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: .85rem;
+        font-weight: 600;
+        margin-right: 12px;
+        flex-shrink: 0;
+    }
+    .chapter-title {
+        flex: 1;
+        font-weight: 500;
+    }
+    .chapter-date {
+        color: var(--muted);
+        font-size: .8rem;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 16px;
+    }
+    .stat-card {
+        background: #f9fafb;
+        padding: 16px;
+        border-radius: 10px;
+        text-align: center;
+    }
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--gold);
+    }
+    .stat-label {
+        color: var(--muted);
+        font-size: .85rem;
+        margin-top: 4px;
+    }
+
+    .rating-stars {
+        color: var(--gold);
+        font-size: 1.2rem;
+        letter-spacing: 2px;
+    }
+
+    @@media (max-width: 768px) {
+        .detail-header { padding: 24px 0; }
+        .story-info h1 { font-size: 1.5rem; }
+        .story-cover { max-width: 200px; margin: 0 auto 20px; }
+    }
+
+    /* ── Comment Section Styles ── */
+    .comment-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--gold) 0%, var(--gold-soft) 100%);
+        color: var(--ink);
+        font-weight: 700;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        box-shadow: 0 3px 6px rgba(0,0,0,.15);
+    }
+    
+    .comment-form-container {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 24px;
+        background: #f9fafb;
+        padding: 20px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+    }
+    
+    .comment-form-body {
+        flex: 1;
+    }
+    
+    .comment-input {
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 12px;
+        width: 100%;
+        min-height: 80px;
+        resize: vertical;
+        font-size: .95rem;
+        transition: all .2s;
+    }
+    
+    .comment-input:focus {
+        border-color: var(--gold);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(232,160,69,.15);
+    }
+    
+    .comment-btn-submit {
+        background: var(--ink);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 8px 20px;
+        font-weight: 600;
+        font-size: .9rem;
+        transition: all .2s;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    
+    .comment-btn-submit:hover {
+        background: var(--gold);
+        color: var(--ink);
+        box-shadow: 0 4px 12px rgba(232,160,69,.25);
+    }
+    
+    .comment-list {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        margin-top: 16px;
+    }
+    
+    .comment-item {
+        display: flex;
+        gap: 16px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #f3f4f6;
+        animation: fadeIn 0.5s ease-out;
+    }
+    
+    .comment-item:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+    
+    .comment-item-body {
+        flex: 1;
+    }
+    
+    .comment-item-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 6px;
+    }
+    
+    .comment-author {
+        font-weight: 600;
+        color: var(--ink);
+        font-size: .95rem;
+    }
+    
+    .comment-time {
+        font-size: .8rem;
+        color: var(--muted);
+    }
+    
+    .comment-text {
+        color: #4b5563;
+        font-size: .92rem;
+        line-height: 1.5;
+        white-space: pre-line;
+    }
+    
+    .empty-comment-placeholder {
+        text-align: center;
+        padding: 32px 16px;
+        color: var(--muted);
+    }
+    
+    .empty-comment-placeholder i {
+        font-size: 2.5rem;
+        color: #e5e7eb;
+        display: block;
+        margin-bottom: 12px;
+    }
+    
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+@* ─── DETAIL HEADER ─────────────────────────────────────────────────────────── *@
+<div class="detail-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-4 col-sm-5 mb-4 mb-md-0">
+                <div class="story-cover">
+                    <img src="@Model.CoverImage"
+                         alt="@Model.Title"
+                         referrerpolicy="no-referrer">
+                </div>
+            </div>
+            <div class="col-md-8 col-sm-7">
+                <div class="story-info">
+                    <h1>@Model.Title</h1>
+                    <div class="author-name">
+                        Tác giả: <span>@Model.AuthorName</span>
+                    </div>
+                    
+                    <div class="story-meta">
+                        <div class="meta-item">
+                            <i class="bi bi-eye"></i>
+                            <span>@Model.ViewCount.ToString("N0") lượt xem</span>
+                        </div>
+                        <div class="meta-item">
+                            <i class="bi bi-book"></i>
+                            <span>@Model.ChapterCount chương</span>
+                        </div>
+                        <div class="meta-item">
+                            <i class="bi bi-star-fill"></i>
+                            <span>@Model.Rating.ToString("0.0")</span>
+                        </div>
+                        <div class="meta-item">
+                            <i class="bi bi-calendar"></i>
+                            <span>@Model.UpdatedAt.ToString("dd/MM/yyyy")</span>
+                        </div>
+                    </div>
+
+                    <div class="story-genres">
+                        @foreach (var sg in Model.StoryGenres)
+                        {
+                            <a href="/Story?genreId=@sg.GenreId" class="genre-badge">@sg.Genre.Name</a>
+                        }
+                    </div>
+
+                    <div class="mb-3">
+                        @if (Model.Status == "Hoàn thành")
+                        {
+                            <span class="status-badge status-completed">✓ Hoàn thành</span>
+                        }
+                        else
+                        {
+                            <span class="status-badge status-ongoing">● Đang ra</span>
+                        }
+                    </div>
+
+                    @if (Model.Chapters.Any())
+                    {
+                        <a href="/Story/Chapter/@Model.Chapters.First().Id" class="btn-read">
+                            <i class="bi bi-book-open me-2"></i>Đọc Ngay
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ─── MAIN CONTENT ───────────────────────────────────────────────────────────── *@
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-8">
+            @* Description *@
+            <div class="content-section">
+                <h2 class="section-title">Giới Thiệu</h2>
+                <div class="description-text">
+                    @if (!string.IsNullOrEmpty(Model.Description))
+                    {
+                        @Model.Description
+                    }
+                    else
+                    {
+                        <text>Chưa có mô tả cho truyện này.</text>
+                    }
+                </div>
+            </div>
+
+            @* Chapter List *@
+            <div class="content-section">
+                <h2 class="section-title">Danh Sách Chương</h2>
+                @if (Model.Chapters.Any())
+                {
+                    <ul class="chapter-list">
+                        @foreach (var chapter in Model.Chapters.OrderBy(c => c.ChapterNumber))
+                        {
+                            <li>
+                                <a href="/Story/Chapter/@chapter.Id" class="chapter-item">
+                                    <span class="chapter-number">@chapter.ChapterNumber</span>
+                                    <span class="chapter-title">@chapter.Title</span>
+                                    <span class="chapter-date">@chapter.CreatedAt.ToString("dd/MM/yyyy")</span>
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p class="text-muted">Chưa có chương nào.</p>
+                }
+            </div>
+
+            @* Comment Section *@
+            <div class="content-section" id="comment-section">
+                <h2 class="section-title">
+                    <i class="bi bi-chat-left-text me-2"></i>Bình Luận 
+                    (<span id="comment-count-header">@Model.Comments.Count</span>)
+                </h2>
+
+                <!-- Comment Form -->
+                <div class="comment-form-container">
+                    @{
+                        var loggedInUser = Context.Session.GetString("UserName");
+                        var initialLetter = !string.IsNullOrEmpty(loggedInUser) 
+                            ? loggedInUser[0].ToString().ToUpper() 
+                            : "?";
+                    }
+                    <div class="comment-avatar" id="form-avatar">@initialLetter</div>
+                    <form id="commentForm" class="comment-form-body" method="post" asp-controller="Story" asp-action="PostComment">
+                        <input type="hidden" name="storyId" value="@Model.Id" />
+                        
+                        @if (string.IsNullOrEmpty(loggedInUser))
+                        {
+                            <div class="row mb-2">
+                                <div class="col-md-6 col-sm-12">
+                                    <input type="text" id="guestNameInput" name="userName" class="form-control form-control-sm" placeholder="Tên hiển thị (mặc định: Ẩn danh)" maxlength="50" />
+                                </div>
+                                <div class="col-md-6 col-sm-12 d-flex align-items-center mt-2 mt-md-0">
+                                    <span class="text-muted" style="font-size: .8rem;">
+                                        <i class="bi bi-info-circle me-1"></i>Đăng nhập để tự động lưu tên tài khoản của bạn.
+                                    </span>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="mb-2">
+                                <span class="fw-semibold text-dark" style="font-size: .9rem;">
+                                    Đang bình luận dưới tên: <span class="text-primary">@loggedInUser</span>
+                                </span>
+                            </div>
+                        }
+
+                        <div class="mb-3">
+                            <textarea id="commentContent" name="content" class="comment-input" placeholder="Chia sẻ cảm nghĩ của bạn về truyện..." rows="3" required></textarea>
+                        </div>
+                        <div class="text-end">
+                            <button type="submit" class="comment-btn-submit">
+                                <i class="bi bi-send-fill"></i>Gửi bình luận
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Comment List -->
+                <div class="comment-list" id="commentList">
+                    @if (Model.Comments.Any())
+                    {
+                        foreach (var comment in Model.Comments.OrderByDescending(c => c.CreatedAt))
+                        {
+                            var commentInitial = !string.IsNullOrEmpty(comment.UserName) 
+                                ? comment.UserName[0].ToString().ToUpper() 
+                                : "?";
+                            <div class="comment-item">
+                                <div class="comment-avatar">@commentInitial</div>
+                                <div class="comment-item-body">
+                                    <div class="comment-item-header">
+                                        <span class="comment-author">@comment.UserName</span>
+                                        <span class="comment-time">@comment.CreatedAt.ToString("dd/MM/yyyy HH:mm")</span>
+                                    </div>
+                                    <div class="comment-text">@comment.Content</div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="empty-comment-placeholder" id="emptyComments">
+                            <i class="bi bi-chat-dots"></i>
+                            Chưa có bình luận nào. Hãy là người đầu tiên chia sẻ ý kiến của bạn!
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            @* Stats *@
+            <div class="content-section">
+                <h2 class="section-title">Thống Kê</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">@Model.ViewCount.ToString("N0")</div>
+                        <div class="stat-label">Lượt xem</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">@Model.ChapterCount</div>
+                        <div class="stat-label">Chương</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">@Model.Rating.ToString("0.0")</div>
+                        <div class="stat-label">Đánh giá</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="comment-count-stat">@Model.Comments.Count</div>
+                        <div class="stat-label">Bình luận</div>
+                    </div>
+                </div>
+            </div>
+
+            @* Rating *@
+            <div class="content-section">
+                <h2 class="section-title">Đánh Giá</h2>
+                <div class="text-center">
+                    <div class="rating-stars mb-2" id="interactive-rating" data-story-id="@Model.Id">
+                        @for (int i = 1; i <= 5; i++)
+                        {
+                            if (i <= Math.Round(Model.Rating))
+                            {
+                                <i class="bi bi-star-fill star-rating" data-value="@i" style="cursor: pointer; transition: color 0.2s;"></i>
+                            }
+                            else
+                            {
+                                <i class="bi bi-star star-rating" data-value="@i" style="cursor: pointer; transition: color 0.2s;"></i>
+                            }
+                        }
+                    </div>
+                    <div class="h3 mb-1" id="rating-value-display">@Model.Rating.ToString("0.0")</div>
+                    <div class="text-muted"><span id="rating-count-display">@Model.Ratings.Count</span> đánh giá</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Cập nhật avatar khi gõ tên khách (Guest)
+            $('#guestNameInput').on('input', function() {
+                var val = $(this).val().trim();
+                var letter = val ? val.charAt(0).toUpperCase() : '?';
+                $('#form-avatar').text(letter);
+            });
+
+            // Gửi form qua AJAX
+            $('#commentForm').on('submit', function(e) {
+                e.preventDefault();
+
+                var $form = $(this);
+                var content = $('#commentContent').val().trim();
+                
+                if (!content) {
+                    alert('Vui lòng nhập nội dung bình luận.');
+                    return;
+                }
+
+                var formData = $form.serialize();
+
+                // Disable submit button during load
+                var $btn = $form.find('.comment-btn-submit');
+                $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Đang gửi...');
+
+                $.ajax({
+                    url: $form.attr('action'),
+                    type: 'POST',
+                    data: formData,
+                    success: function(response) {
+                        if (response.success) {
+                            // Xóa nội dung textarea
+                            $('#commentContent').val('');
+                            
+                            // Ẩn placeholder trống
+                            $('#emptyComments').hide();
+
+                            // Tạo DOM bình luận mới
+                            var c = response.comment;
+                            var initial = c.userName ? c.userName.charAt(0).toUpperCase() : '?';
+                            var newCommentHtml = `
+                                <div class="comment-item">
+                                    <div class="comment-avatar">${initial}</div>
+                                    <div class="comment-item-body">
+                                        <div class="comment-item-header">
+                                            <span class="comment-author">${c.userName}</span>
+                                            <span class="comment-time">${c.createdAt}</span>
+                                        </div>
+                                        <div class="comment-text">${escapeHtml(c.content)}</div>
+                                    </div>
+                                </div>
+                            `;
+
+                            // Chèn lên đầu danh sách bình luận
+                            $('#commentList').prepend(newCommentHtml);
+
+                            // Cập nhật số lượng bình luận ở các nơi
+                            var currentCount = parseInt($('#comment-count-header').text()) || 0;
+                            var newCount = currentCount + 1;
+                            $('#comment-count-header').text(newCount);
+                            $('#comment-count-stat').text(newCount);
+                        } else {
+                            alert(response.message || 'Gửi bình luận thất bại. Vui lòng thử lại.');
+                        }
+                    },
+                    error: function(xhr) {
+                        var errorMsg = 'Có lỗi xảy ra khi gửi bình luận.';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMsg = xhr.responseJSON.message;
+                        }
+                        alert(errorMsg);
+                    },
+                    complete: function() {
+                        // Re-enable submit button
+                        $btn.prop('disabled', false).html('<i class="bi bi-send-fill"></i>Gửi bình luận');
+                    }
+                });
+            });
+
+            // Hàm tránh XSS
+            function escapeHtml(text) {
+                var map = {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                };
+                return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+            }
+
+            // --- Rating Logic ---
+            var isSubmittingRating = false;
+            
+            $('.star-rating').on('mouseenter', function() {
+                var value = $(this).data('value');
+                $('.star-rating').each(function() {
+                    if ($(this).data('value') <= value) {
+                        $(this).removeClass('bi-star').addClass('bi-star-fill');
+                    } else {
+                        $(this).removeClass('bi-star-fill').addClass('bi-star');
+                    }
+                });
+            }).on('mouseleave', function() {
+                // Reset to current actual rating if not submitted
+                var currentRating = parseFloat($('#rating-value-display').text());
+                var roundedRating = Math.round(currentRating);
+                $('.star-rating').each(function() {
+                    if ($(this).data('value') <= roundedRating) {
+                        $(this).removeClass('bi-star').addClass('bi-star-fill');
+                    } else {
+                        $(this).removeClass('bi-star-fill').addClass('bi-star');
+                    }
+                });
+            });
+
+            $('.star-rating').on('click', function() {
+                if (isSubmittingRating) return;
+                
+                var value = $(this).data('value');
+                var storyId = $('#interactive-rating').data('story-id');
+                isSubmittingRating = true;
+
+                $.ajax({
+                    url: '/Story/RateStory',
+                    type: 'POST',
+                    data: { storyId: storyId, score: value },
+                    success: function(response) {
+                        if (response.success) {
+                            $('#rating-value-display').text(response.newRating);
+                            $('#rating-count-display').text(response.ratingCount);
+                            // Also update the header stat
+                            $('.story-meta .meta-item:has(.bi-star-fill) span').text(response.newRating);
+                            $('.stats-grid .stat-card:nth-child(3) .stat-value').text(response.newRating);
+                            
+                            // Re-trigger mouseleave to set correct stars
+                            $('.star-rating').trigger('mouseleave');
+                            
+                            alert(response.message);
+                        } else {
+                            alert(response.message || 'Lỗi khi đánh giá.');
+                        }
+                    },
+                    error: function() {
+                        alert('Có lỗi xảy ra khi gửi đánh giá.');
+                    },
+                    complete: function() {
+                        isSubmittingRating = false;
+                    }
+                });
+            });
+        });
+    </script>
+}

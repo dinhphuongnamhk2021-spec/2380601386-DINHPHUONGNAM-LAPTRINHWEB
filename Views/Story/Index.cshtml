@@ -1,0 +1,485 @@
+@model DOANLAPTRINHWWEB.Models.StoryIndexViewModel
+@{
+    ViewData["Title"] = "Trang Chủ - DocTruyen";
+    var selectedGenre = Model.Genres.FirstOrDefault(g => g.Id == Model.SelectedGenreId);
+    bool isSearching = !string.IsNullOrWhiteSpace(Model.SearchKeyword)
+                    || Model.SelectedGenreId.HasValue
+                    || !string.IsNullOrWhiteSpace(Model.SelectedStatus);
+}
+
+@* ─── CSS riêng cho trang này ───────────────────────────────────────────── *@
+<style>
+    :root {
+        --ink:       #1a1a2e;
+        --ink2:      #16213e;
+        --gold:      #e8a045;
+        --gold-soft: #f5c878;
+        --muted:     #6b7280;
+        --card-bg:   #ffffff;
+        --border:    #e5e7eb;
+        --pill-bg:   #f3f4f6;
+    }
+
+    /* ── Hero ── */
+    .hero-wrap {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        padding: 56px 0 48px;
+        color: #fff;
+        position: relative;
+        overflow: hidden;
+    }
+    .hero-wrap::before {
+        content: '';
+        position: absolute; inset: 0;
+        background: radial-gradient(ellipse 80% 60% at 60% 50%, rgba(232,160,69,.12) 0%, transparent 70%);
+        pointer-events: none;
+    }
+    .hero-title {
+        font-family: 'Playfair Display', serif;
+        font-size: clamp(2rem, 5vw, 3rem);
+        font-weight: 700;
+        letter-spacing: -.5px;
+        line-height: 1.15;
+    }
+    .hero-title span { color: var(--gold); }
+    .hero-sub { color: rgba(255,255,255,.65); font-size: .95rem; margin-top: 8px; }
+
+    /* ── Search box ── */
+    .search-card {
+        background: rgba(255,255,255,.07);
+        border: 1px solid rgba(255,255,255,.12);
+        border-radius: 16px;
+        padding: 24px 28px;
+        backdrop-filter: blur(10px);
+    }
+    .search-card .form-control,
+    .search-card .form-select {
+        background: rgba(255,255,255,.1);
+        border: 1px solid rgba(255,255,255,.2);
+        color: #fff;
+        border-radius: 10px;
+    }
+    .search-card .form-control::placeholder { color: rgba(255,255,255,.45); }
+    .search-card .form-select option { background: #1a1a2e; color: #fff; }
+    .search-card .form-control:focus,
+    .search-card .form-select:focus {
+        background: rgba(255,255,255,.15);
+        border-color: var(--gold);
+        box-shadow: 0 0 0 3px rgba(232,160,69,.2);
+        color: #fff;
+    }
+    .btn-search {
+        background: var(--gold);
+        color: #1a1a2e;
+        font-weight: 600;
+        border: none;
+        border-radius: 10px;
+        padding: 10px 28px;
+        transition: all .2s;
+    }
+    .btn-search:hover { background: var(--gold-soft); transform: translateY(-1px); }
+
+    /* ── Section titles ── */
+    .section-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.35rem;
+        font-weight: 700;
+        color: var(--ink);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .section-title::before {
+        content: '';
+        display: inline-block;
+        width: 4px; height: 22px;
+        background: var(--gold);
+        border-radius: 2px;
+    }
+
+    /* ── Story card ── */
+    .story-card {
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        overflow: hidden;
+        background: var(--card-bg);
+        transition: transform .22s ease, box-shadow .22s ease;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    .story-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 14px 36px rgba(0,0,0,.12);
+    }
+    .story-card-img {
+        aspect-ratio: 3/4;
+        object-fit: cover;
+        width: 100%;
+        background: linear-gradient(135deg, #dde1e7, #c5ccd6);
+    }
+    /* Placeholder cover khi không có ảnh */
+    .cover-placeholder {
+        aspect-ratio: 3/4;
+        background: linear-gradient(135deg, #1a1a2e, #0f3460);
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        color: rgba(255,255,255,.5);
+        font-size: .7rem;
+        gap: 8px;
+    }
+    .cover-placeholder i { font-size: 2.2rem; opacity: .4; }
+    .cover-placeholder span {
+        font-weight: 600;
+        font-size: .65rem;
+        text-align: center;
+        padding: 0 8px;
+        color: rgba(255,255,255,.7);
+        line-height: 1.3;
+    }
+    .story-card-body { padding: 14px 14px 16px; flex: 1; display: flex; flex-direction: column; }
+    .story-title {
+        font-weight: 700;
+        font-size: .9rem;
+        color: var(--ink);
+        margin-bottom: 4px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-decoration: none;
+        transition: color .15s;
+    }
+    .story-title:hover { color: var(--gold); }
+    .story-author { color: var(--muted); font-size: .75rem; margin-bottom: 8px; }
+
+    .story-meta { margin-top: auto; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .badge-genre {
+        background: #fef3c7; color: #92400e;
+        border-radius: 20px; font-size: .68rem;
+        padding: 2px 10px; font-weight: 600;
+    }
+    .badge-status-done   { background:#d1fae5; color:#065f46; border-radius:20px; font-size:.68rem; padding:2px 10px; font-weight:600; }
+    .badge-status-ongoing{ background:#dbeafe; color:#1e40af; border-radius:20px; font-size:.68rem; padding:2px 10px; font-weight:600; }
+
+    .story-stats { display: flex; gap: 10px; font-size: .72rem; color: var(--muted); margin-top: 6px; }
+    .story-stats i { font-size: .8rem; }
+
+    /* ── Featured (top 5 nổi bật) ── */
+    .featured-strip { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+    .featured-strip::-webkit-scrollbar { display:none; }
+    .featured-card {
+        flex: 0 0 160px;
+        border-radius: 12px;
+        overflow: hidden;
+        position: relative;
+        cursor: pointer;
+        transition: transform .2s;
+    }
+    .featured-card:hover { transform: scale(1.03); }
+    .featured-img {
+        width: 100%; aspect-ratio: 2/3;
+        object-fit: cover;
+        background: linear-gradient(135deg, #0f3460, #533483);
+    }
+    .featured-overlay {
+        position: absolute; bottom: 0; left: 0; right: 0;
+        background: linear-gradient(transparent, rgba(0,0,0,.85));
+        padding: 28px 10px 10px;
+    }
+    .featured-title {
+        color: #fff; font-size: .78rem; font-weight: 700;
+        display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+        text-decoration: none;
+    }
+    .featured-rating { color: var(--gold); font-size: .7rem; margin-top: 2px; }
+
+    /* ── Phân trang ── */
+    .page-link { color: var(--ink); border-radius: 8px !important; margin: 0 2px; border-color: var(--border); }
+    .page-item.active .page-link { background: var(--gold); border-color: var(--gold); color: #1a1a2e; font-weight:700; }
+    .page-link:hover { background: #fef3c7; color: var(--ink); }
+
+    /* ── Filter pills ── */
+    .active-filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    .filter-pill {
+        background: #fef3c7; color: #92400e;
+        border-radius: 20px; font-size: .78rem;
+        padding: 4px 12px; display: flex; align-items: center; gap: 6px;
+        text-decoration: none;
+    }
+    .filter-pill:hover { background: #fde68a; }
+
+    /* ── Empty state ── */
+    .empty-state { text-align: center; padding: 60px 20px; color: var(--muted); }
+    .empty-state i { font-size: 3.5rem; opacity: .3; display: block; margin-bottom: 16px; }
+
+    @@media (max-width: 576px) {
+        .search-card { padding: 16px; }
+        .hero-wrap   { padding: 36px 0 32px; }
+    }
+</style>
+
+@* Google Font Playfair Display *@
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+@* Bootstrap Icons *@
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+@* ─── HERO ─────────────────────────────────────────────────────────────────── *@
+<div class="hero-wrap">
+    <div class="container">
+        <div class="row gy-4 align-items-center">
+            <div class="col-lg-5 col-md-6">
+                <div class="hero-title">Thế Giới <span>Truyện</span><br>Trong Tầm Tay</div>
+                <p class="hero-sub">Hàng ngàn bộ truyện chọn lọc – Tiên Hiệp, Huyền Huyễn, Ngôn Tình và nhiều hơn nữa.</p>
+            </div>
+            <div class="col-lg-7 col-md-6">
+                @* ── Search form ── *@
+                <div class="search-card">
+                    <form asp-controller="Story" asp-action="Index" method="get">
+                        <div class="row g-2">
+                            <div class="col-12">
+                                <input type="text" name="q" class="form-control"
+                                       placeholder="🔍  Tìm tên truyện, tác giả..."
+                                       value="@Model.SearchKeyword">
+                            </div>
+                            <div class="col-6">
+                                <select name="genre" class="form-select">
+                                    <option value="">-- Thể loại --</option>
+                                    @foreach (var g in Model.Genres)
+                                    {
+                                        <option value="@g.Id" selected="@(Model.SelectedGenreId == g.Id ? "selected" : null)">@g.Name</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <select name="status" class="form-select">
+                                    <option value="">-- Trạng thái --</option>
+                                    <option value="Đang ra"    selected="@(Model.SelectedStatus=="Đang ra"    ? "selected":null)">Đang ra</option>
+                                    <option value="Hoàn thành" selected="@(Model.SelectedStatus=="Hoàn thành" ? "selected":null)">Hoàn thành</option>
+                                </select>
+                            </div>
+                            <div class="col-12 d-flex gap-2">
+                                <button type="submit" class="btn btn-search flex-grow-1">
+                                    <i class="bi bi-search me-1"></i> Tìm Kiếm
+                                </button>
+                                @if (isSearching)
+                                {
+                                    <a asp-controller="Story" asp-action="Index" class="btn btn-outline-light" title="Xóa bộ lọc">
+                                        <i class="bi bi-x-lg"></i>
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ─── NỘI DUNG CHÍNH ────────────────────────────────────────────────────────── *@
+<div class="container py-4">
+
+    @* ── Khi KHÔNG tìm kiếm: hiện Featured + Recent trước danh sách ── *@
+    @if (!isSearching)
+    {
+        @* Top 5 nổi bật *@
+        <div class="mb-5">
+            <div class="section-title mb-3">
+                <i class="bi bi-fire text-warning"></i> Truyện Nổi Bật
+            </div>
+            <div class="featured-strip">
+                @foreach (var s in Model.FeaturedStories)
+                {
+                    <div class="featured-card">
+                        <a asp-controller="Story" asp-action="Detail" asp-route-id="@s.Id" class="text-decoration-none d-block h-100">
+                            <img class="featured-img"
+                                 src="@s.CoverImage"
+                                 alt="@s.Title"
+                                 loading="lazy"
+                                 referrerpolicy="no-referrer">
+                            <div class="featured-overlay">
+                                <span class="featured-title d-block">@s.Title</span>
+                                <div class="featured-rating">
+                                    ★ @s.Rating.ToString("0.0") &nbsp;·&nbsp; @s.Genre
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+
+        @* Mới cập nhật *@
+        <div class="mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="section-title"><i class="bi bi-clock-history"></i> Mới Cập Nhật</div>
+                <a asp-controller="Story" asp-action="Index" class="text-decoration-none" style="color:var(--gold);font-size:.85rem;font-weight:600;">
+                    Xem tất cả <i class="bi bi-chevron-right"></i>
+                </a>
+            </div>
+            <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 g-3">
+                @foreach (var s in Model.RecentStories)
+                {
+                    <div class="col">
+                        <div class="story-card">
+                            <a asp-controller="Story" asp-action="Detail" asp-route-id="@s.Id" class="d-block text-decoration-none">
+                                <img class="story-card-img"
+                                     src="@s.CoverImage"
+                                     alt="@s.Title"
+                                     loading="lazy"
+                                     referrerpolicy="no-referrer">
+                            </a>
+                            <div class="story-card-body">
+                                <a asp-controller="Story" asp-action="Detail" asp-route-id="@s.Id" class="story-title">@s.Title</a>
+                                <div class="story-author">@s.AuthorName</div>
+                                <div class="story-meta">
+                                    <span class="badge-genre">@s.Genre</span>
+                                    @if (s.Status == "Hoàn thành")
+                                    { <span class="badge-status-done">Full</span> }
+                                    else
+                                    { <span class="badge-status-ongoing">Đang ra</span> }
+                                </div>
+                                <div class="story-stats mt-2">
+                                    <span><i class="bi bi-book"></i> @s.ChapterCount chương</span>
+                                    <span><i class="bi bi-eye"></i> @(s.ViewCount >= 1000 ? (s.ViewCount/1000)+"k" : s.ViewCount.ToString())</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <hr class="my-4" style="border-color:#e5e7eb;">
+        <div class="section-title mb-3"><i class="bi bi-grid"></i> Tất Cả Truyện</div>
+    }
+    else
+    {
+        @* ── Đang tìm kiếm: hiện filter pills & kết quả ── *@
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="section-title" style="font-size:1.1rem;">
+                Kết quả: <span style="color:var(--gold);">@Model.Stories.Count</span> truyện
+            </div>
+            <a asp-controller="Story" asp-action="Index" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-x-circle me-1"></i>Xóa bộ lọc
+            </a>
+        </div>
+
+        <div class="active-filters mb-3">
+            @if (!string.IsNullOrWhiteSpace(Model.SearchKeyword))
+            {
+                <a class="filter-pill"
+                   asp-controller="Story" asp-action="Index"
+                   asp-route-genreId="@Model.SelectedGenreId"
+                   asp-route-status="@Model.SelectedStatus">
+                    <i class="bi bi-search"></i> @Model.SearchKeyword <i class="bi bi-x"></i>
+                </a>
+            }
+            @if (selectedGenre != null)
+            {
+                <a class="filter-pill"
+                   asp-controller="Story" asp-action="Index"
+                   asp-route-q="@Model.SearchKeyword"
+                   asp-route-status="@Model.SelectedStatus">
+                    <i class="bi bi-tag"></i> @selectedGenre.Name <i class="bi bi-x"></i>
+                </a>
+            }
+            @if (!string.IsNullOrWhiteSpace(Model.SelectedStatus))
+            {
+                <a class="filter-pill"
+                   asp-controller="Story" asp-action="Index"
+                   asp-route-q="@Model.SearchKeyword"
+                   asp-route-genreId="@Model.SelectedGenreId">
+                    <i class="bi bi-circle-half"></i> @Model.SelectedStatus <i class="bi bi-x"></i>
+                </a>
+            }
+        </div>
+    }
+
+    @* ── Danh sách truyện (dùng chung cả 2 trạng thái) ── *@
+    @if (Model.Stories.Count == 0)
+    {
+        <div class="empty-state">
+            <i class="bi bi-search"></i>
+            <p class="fw-semibold mb-1">Không tìm thấy truyện nào</p>
+            <p style="font-size:.88rem;">Hãy thử thay đổi từ khóa hoặc bộ lọc</p>
+            <a asp-controller="Story" asp-action="Index" class="btn btn-outline-secondary mt-2">
+                <i class="bi bi-arrow-left me-1"></i>Về trang chủ
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 g-3">
+            @foreach (var s in Model.Stories)
+            {
+                <div class="col">
+                    <div class="story-card">
+                        <a asp-controller="Story" asp-action="Detail" asp-route-id="@s.Id" class="d-block text-decoration-none">
+                            <img class="story-card-img"
+                                 src="@s.CoverImage"
+                                 alt="@s.Title"
+                                 loading="lazy"
+                                 referrerpolicy="no-referrer">
+                        </a>
+                        <div class="story-card-body">
+                            <a asp-controller="Story" asp-action="Detail" asp-route-id="@s.Id"
+                               class="story-title">@s.Title</a>
+                            <div class="story-author">@s.AuthorName</div>
+                            <div class="story-meta">
+                                <span class="badge-genre">@s.Genre</span>
+                                @if (s.Status == "Hoàn thành")
+                                { <span class="badge-status-done">Full</span> }
+                                else
+                                { <span class="badge-status-ongoing">Đang ra</span> }
+                            </div>
+                            <div class="story-stats mt-2">
+                                <span><i class="bi bi-book"></i> @s.ChapterCount</span>
+                                <span><i class="bi bi-eye"></i> @(s.ViewCount>=1000?(s.ViewCount/1000)+"k":s.ViewCount.ToString())</span>
+                                <span><i class="bi bi-star-fill text-warning"></i> @s.Rating</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        @* ── Phân trang ── *@
+        @if (Model.TotalPages > 1)
+        {
+            <nav class="mt-4 d-flex justify-content-center">
+                <ul class="pagination">
+                    @if (Model.CurrentPage > 1)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" asp-controller="Story" asp-action="Index"
+                               asp-route-q="@Model.SearchKeyword" asp-route-genreId="@Model.SelectedGenreId"
+                               asp-route-status="@Model.SelectedStatus" asp-route-page="@(Model.CurrentPage-1)">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+                    }
+                    @for (int p = Math.Max(1, Model.CurrentPage-2); p <= Math.Min(Model.TotalPages, Model.CurrentPage+2); p++)
+                    {
+                        <li class="page-item @(p == Model.CurrentPage ? "active" : "")">
+                            <a class="page-link" asp-controller="Story" asp-action="Index"
+                               asp-route-q="@Model.SearchKeyword" asp-route-genreId="@Model.SelectedGenreId"
+                               asp-route-status="@Model.SelectedStatus" asp-route-page="@p">@p</a>
+                        </li>
+                    }
+                    @if (Model.CurrentPage < Model.TotalPages)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" asp-controller="Story" asp-action="Index"
+                               asp-route-q="@Model.SearchKeyword" asp-route-genreId="@Model.SelectedGenreId"
+                               asp-route-status="@Model.SelectedStatus" asp-route-page="@(Model.CurrentPage+1)">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        }
+    }
+</div>

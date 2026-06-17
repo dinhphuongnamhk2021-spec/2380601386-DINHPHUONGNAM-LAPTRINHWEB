@@ -1,0 +1,241 @@
+@model DOANLAPTRINHWWEB.Models.Story
+@{
+    ViewData["Title"] = "Chỉnh Sửa Truyện";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var genres = ViewBag.Genres as List<DOANLAPTRINHWWEB.Models.Genre> ?? new List<DOANLAPTRINHWWEB.Models.Genre>();
+    var selectedGenreIds = Model?.StoryGenres?.Select(sg => sg.GenreId).ToList() ?? new List<int>();
+}
+
+@section Styles {
+    <style>
+        .form-card {
+            background: #fff;
+            border-radius: 14px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 15px rgba(0,0,0,.03);
+            border: 1px solid rgba(0,0,0,.02);
+        }
+        
+        .form-card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--ink);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #f3f4f6;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-label {
+            font-weight: 600;
+            font-size: .88rem;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .form-control, .form-select {
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            padding: 10px 14px;
+            font-size: .92rem;
+            transition: all .2s;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(232,160,69,.15);
+        }
+
+        /* Modern Genre List */
+        .genre-card-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 10px;
+        }
+        
+        .genre-card-item {
+            background: #f9fafb;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all .15s ease;
+            user-select: none;
+        }
+
+        .genre-card-item:hover {
+            background: #f3f4f6;
+            border-color: #d1d5db;
+        }
+
+        .genre-card-item input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--gold);
+            cursor: pointer;
+            margin: 0;
+        }
+
+        .genre-card-item span {
+            font-size: .85rem;
+            font-weight: 500;
+            color: #4b5563;
+        }
+
+        /* Image Preview Box */
+        .preview-box {
+            aspect-ratio: 3/4;
+            max-width: 120px;
+            border-radius: 8px;
+            background: #f3f4f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            margin: 0 auto;
+        }
+
+        .preview-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .preview-box i {
+            font-size: 2rem;
+            color: #d1d5db;
+        }
+    </style>
+}
+
+<form method="post" id="editStoryForm">
+    <input type="hidden" name="Id" value="@Model?.Id" />
+    <div class="row">
+        <!-- Left Column: Details & Settings -->
+        <div class="col-lg-8">
+            <!-- General Info Card -->
+            <div class="form-card">
+                <div class="form-card-title">
+                    <i class="bi bi-pencil-square text-primary"></i> Thông Tin Truyện
+                </div>
+                
+                <div class="mb-3">
+                    <label for="Title" class="form-label">Tiêu đề truyện *</label>
+                    <input type="text" class="form-control" id="Title" name="Title" 
+                           value="@Model?.Title" required maxlength="200">
+                </div>
+
+                <div class="mb-3">
+                    <label for="AuthorName" class="form-label">Tác giả *</label>
+                    <input type="text" class="form-control" id="AuthorName" name="AuthorName" 
+                           value="@Model?.AuthorName" required maxlength="100">
+                </div>
+
+                <div class="mb-0">
+                    <label for="Description" class="form-label">Mô tả tóm tắt</label>
+                    <textarea class="form-control" id="Description" name="Description" rows="5" 
+                              maxlength="2000">@Model?.Description</textarea>
+                </div>
+            </div>
+
+            <!-- Settings Card with Live Preview -->
+            <div class="form-card">
+                <div class="form-card-title">
+                    <i class="bi bi-gear text-primary"></i> Cấu Hình & Ảnh Bìa
+                </div>
+
+                <div class="row align-items-center mb-3">
+                    <div class="col-md-9 col-sm-12 mb-3 mb-md-0">
+                        <label for="CoverImage" class="form-label">Đường dẫn ảnh bìa</label>
+                        <input type="text" class="form-control" id="CoverImage" name="CoverImage" 
+                               value="@Model?.CoverImage" required>
+                    </div>
+                    <div class="col-md-3 col-sm-12 text-center">
+                        <div class="preview-box">
+                            <img id="coverPreview" src="@(Model?.CoverImage ?? "/images/default-cover.jpg")" alt="Cover Preview" onerror="this.src='/images/default-cover.jpg'; this.onerror=null;" referrerpolicy="no-referrer" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="Status" class="form-label">Trạng thái phát hành</label>
+                        <select class="form-select" id="Status" name="Status">
+                            <option value="Đang ra" selected="@(Model?.Status == "Đang ra")">Đang ra</option>
+                            <option value="Hoàn thành" selected="@(Model?.Status == "Hoàn thành")">Hoàn thành</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="ViewCount" class="form-label">Lượt xem</label>
+                        <input type="number" class="form-control" id="ViewCount" name="ViewCount" 
+                               value="@Model?.ViewCount" min="0">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Genres -->
+        <div class="col-lg-4">
+            <div class="form-card">
+                <div class="form-card-title">
+                    <i class="bi bi-tags text-primary"></i> Thể Loại
+                </div>
+                
+                @if (genres.Any())
+                {
+                    <div class="genre-card-list">
+                        @foreach (var genre in genres)
+                        {
+                            <label class="genre-card-item">
+                                <input type="checkbox" name="selectedGenres" value="@genre.Id" 
+                                       @(selectedGenreIds.Contains(genre.Id) ? "checked" : "")>
+                                <span>@genre.Name</span>
+                            </label>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted small">Không tìm thấy thể loại nào.</p>
+                }
+            </div>
+
+            <!-- Submit Button Card -->
+            <div class="form-card text-center">
+                <a asp-action="Chapters" asp-route-id="@Model?.Id" class="btn btn-info w-100 mb-3 py-2 fw-semibold text-white" style="background: #17a2b8; border-color: #17a2b8;">
+                    <i class="bi bi-list-ol me-2"></i> Quản Lý Chương
+                </a>
+                <hr class="my-3 text-muted" />
+                <button type="submit" class="btn btn-primary w-100 mb-2 py-2 fw-semibold" style="background: var(--gold); border-color: var(--gold); color: #111122;">
+                    <i class="bi bi-check-circle me-2"></i> Cập Nhật Truyện
+                </button>
+                <a asp-action="Stories" class="btn btn-outline-secondary w-100 py-2 fw-medium">
+                    <i class="bi bi-x-circle me-2"></i> Hủy Bỏ
+                </a>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Live cover preview
+            $('#CoverImage').on('input change', function() {
+                var url = $(this).val().trim();
+                if (url) {
+                    $('#coverPreview').attr('src', url).show();
+                } else {
+                    $('#coverPreview').attr('src', '/images/default-cover.jpg');
+                }
+            });
+        });
+    </script>
+}

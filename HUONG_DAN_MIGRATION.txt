@@ -1,0 +1,25 @@
+====================================================
+  HƯỚNG DẪN TẠO DATABASE - ĐỌC TRƯỚC KHI CHẠY
+====================================================
+
+1. Mở Visual Studio
+2. Vào menu: Tools → NuGet Package Manager → Package Manager Console
+3. Gõ lần lượt 2 lệnh sau:
+
+   PM> Add-Migration InitialCreate
+   PM> Update-Database
+
+4. Mở SQL Server Management Studio (SSMS), kết nối vào:
+   Server: PHƯƠNGNAM\SQLEXPRESS01
+   → Sẽ thấy database "TruyenWebDB" đã được tạo tự động
+
+5. Nhấn F5 để chạy web
+
+====================================================
+  LƯU Ý
+====================================================
+- Nếu lỗi "Cannot open database": kiểm tra SQL Server service đang chạy
+- Nếu lỗi "Login failed": đổi connection string dùng SQL Auth:
+  "Server=PHƯƠNGNAM\SQLEXPRESS01;Database=TruyenWebDB;
+   User Id=sa;Password=matkhaucuaban;TrustServerCertificate=True;"
+

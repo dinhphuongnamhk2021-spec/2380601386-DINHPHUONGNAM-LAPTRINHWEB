@@ -1,0 +1,254 @@
+@{
+    ViewData["Title"] = "Đăng Nhập - DocTruyen";
+}
+
+@* ─── CSS riêng cho trang này ───────────────────────────────────────────── *@
+<style>
+    :root {
+        --ink: #1a1a2e;
+        --ink2: #16213e;
+        --gold: #e8a045;
+        --gold-soft: #f5c878;
+        --muted: #6b7280;
+    }
+
+    .login-container {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    .login-card {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        padding: 40px;
+        width: 100%;
+        max-width: 400px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .login-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .login-header h1 {
+        font-family: 'Playfair Display', serif;
+        font-size: 2rem;
+        font-weight: 700;
+        color: #fff;
+        margin-bottom: 8px;
+    }
+
+    .login-header h1 span {
+        color: var(--gold);
+    }
+
+    .login-header p {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.95rem;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 0.9rem;
+        margin-bottom: 8px;
+        font-weight: 500;
+    }
+
+    .form-control {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 10px;
+        padding: 12px 16px;
+        color: #fff;
+        font-size: 1rem;
+        transition: all 0.2s;
+    }
+
+    .form-control::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    .form-control:focus {
+        background: rgba(255, 255, 255, 0.15);
+        border-color: var(--gold);
+        box-shadow: 0 0 0 3px rgba(232, 160, 69, 0.2);
+        color: #fff;
+        outline: none;
+    }
+
+    .btn-login {
+        background: var(--gold);
+        color: #1a1a2e;
+        font-weight: 700;
+        border: none;
+        border-radius: 10px;
+        padding: 14px 28px;
+        width: 100%;
+        font-size: 1rem;
+        transition: all 0.2s;
+        cursor: pointer;
+    }
+
+    .btn-login:hover {
+        background: var(--gold-soft);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(232, 160, 69, 0.4);
+    }
+
+    .login-divider {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.85rem;
+        margin: 22px 0;
+    }
+
+    .login-divider::before,
+    .login-divider::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-google {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        background: #fff;
+        color: #1f2937;
+        font-weight: 700;
+        border: none;
+        border-radius: 10px;
+        padding: 13px 18px;
+        width: 100%;
+        font-size: 0.95rem;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+
+    .btn-google:hover {
+        color: #111827;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(255, 255, 255, 0.22);
+    }
+
+    .google-mark {
+        width: 20px;
+        height: 20px;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        color: #4285f4;
+        font-weight: 800;
+        font-size: 1.05rem;
+    }
+
+    .error-message {
+        background: rgba(239, 68, 68, 0.2);
+        border: 1px solid rgba(239, 68, 68, 0.5);
+        color: #fca5a5;
+        padding: 12px 16px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        font-size: 0.9rem;
+    }
+
+    .register-link {
+        text-align: center;
+        margin-top: 20px;
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.9rem;
+    }
+
+    .register-link a {
+        color: var(--gold);
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .register-link a:hover {
+        text-decoration: underline;
+    }
+
+    .back-link {
+        text-align: center;
+        margin-top: 15px;
+    }
+
+    .back-link a {
+        color: rgba(255, 255, 255, 0.7);
+        text-decoration: none;
+        font-size: 0.85rem;
+    }
+
+    .back-link a:hover {
+        color: var(--gold);
+    }
+</style>
+
+@* Google Font Playfair Display *@
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-header">
+            <h1>Đăng <span>Nhập</span></h1>
+            <p>Chào mừng trở lại DocTruyen</p>
+        </div>
+
+        @if (!string.IsNullOrEmpty(ViewBag.Error))
+        {
+            <div class="error-message">
+                @ViewBag.Error
+            </div>
+        }
+
+        <form method="post">
+            <div class="form-group">
+                <label for="userName">Tên đăng nhập</label>
+                <input type="text" id="userName" name="userName" class="form-control" 
+                       placeholder="Nhập tên đăng nhập" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Mật khẩu</label>
+                <input type="password" id="password" name="password" class="form-control" 
+                       placeholder="Nhập mật khẩu" required>
+            </div>
+
+            <button type="submit" class="btn-login">
+                Đăng Nhập
+            </button>
+        </form>
+
+        <div class="login-divider">hoặc</div>
+
+        <a asp-action="GoogleLogin" class="btn-google">
+            <span class="google-mark">G</span>
+            Đăng nhập bằng Google
+        </a>
+
+        <div class="register-link">
+            Chưa có tài khoản? <a asp-action="Register">Đăng ký ngay</a>
+        </div>
+
+        <div class="back-link">
+            <a asp-controller="Story" asp-action="Index">← Quay lại trang chủ</a>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,6 @@
+bin/
+obj/
+.vs/
+.tmp_build/
+.tmp_out/
+*.user
