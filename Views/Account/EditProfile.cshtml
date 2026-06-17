@@ -1,0 +1,183 @@
+@model DOANLAPTRINHWWEB.Models.User
+@{
+    ViewData["Title"] = "Chỉnh Sửa Hồ Sơ - DocTruyen";
+}
+
+<style>
+    :root {
+        --ink: #1a1a2e;
+        --gold: #e8a045;
+        --border: #e5e7eb;
+    }
+
+    .edit-profile-container {
+        max-width: 600px;
+        margin: 40px auto;
+    }
+
+    .form-section {
+        background: #fff;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        margin-bottom: 24px;
+    }
+
+    .form-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--ink);
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 2px solid var(--gold);
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: var(--ink);
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all .2s;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--gold);
+        box-shadow: 0 0 0 3px rgba(232,160,69,.15);
+    }
+
+    .alert {
+        padding: 16px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        font-weight: 500;
+    }
+
+    .alert-error {
+        background: rgba(239, 68, 68, .1);
+        color: #b91c1c;
+        border-left: 4px solid #ef4444;
+    }
+
+    .alert-success {
+        background: rgba(34, 197, 94, .1);
+        color: #15803d;
+        border-left: 4px solid #22c55e;
+    }
+
+    .btn-group {
+        display: flex;
+        gap: 12px;
+        margin-top: 24px;
+    }
+
+    .btn {
+        flex: 1;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all .2s;
+        text-decoration: none;
+        text-align: center;
+        display: inline-block;
+    }
+
+    .btn-primary {
+        background: var(--gold);
+        color: var(--ink);
+    }
+
+    .btn-primary:hover {
+        background: #f5c878;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(232,160,69,.4);
+    }
+
+    .btn-secondary {
+        background: #e5e7eb;
+        color: var(--ink);
+    }
+
+    .btn-secondary:hover {
+        background: #d1d5db;
+    }
+
+    .form-hint {
+        font-size: 0.85rem;
+        color: #6b7280;
+        margin-top: 4px;
+    }
+</style>
+
+<div class="edit-profile-container">
+    <div class="form-section">
+        <h1 class="form-title">Chỉnh Sửa Thông Tin Cá Nhân</h1>
+
+        @if (!string.IsNullOrEmpty(ViewBag.Error))
+        {
+            <div class="alert alert-error">
+                <i class="bi bi-exclamation-circle me-2"></i>@ViewBag.Error
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(ViewBag.Success))
+        {
+            <div class="alert alert-success">
+                <i class="bi bi-check-circle me-2"></i>@ViewBag.Success
+            </div>
+        }
+
+        <form method="post" asp-controller="Account" asp-action="EditProfile">
+            <input type="hidden" name="userId" value="@Model.Id" />
+
+            <div class="form-group">
+                <label class="form-label" for="userName">Tên Đăng Nhập</label>
+                <input type="text" id="userName" name="userName" class="form-control" value="@Model.UserName" required />
+                <div class="form-hint">Tên đăng nhập phải có từ 3-50 ký tự</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="email">Email</label>
+                <input type="email" id="email" name="email" class="form-control" value="@Model.Email" required />
+                <div class="form-hint">Email này sẽ được sử dụng cho khôi phục mật khẩu</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Ngày Tạo Tài Khoản</label>
+                <input type="text" class="form-control" value="@Model.CreatedAt.ToString("dd/MM/yyyy")" disabled />
+            </div>
+
+            <div class="btn-group">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-circle me-2"></i>Lưu Thay Đổi
+                </button>
+                <a href="/Account/Profile" class="btn btn-secondary">
+                    <i class="bi bi-x-circle me-2"></i>Hủy
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <div class="form-section">
+        <h2 class="form-title">Bảo Mật</h2>
+        <p style="color: #6b7280; margin-bottom: 16px;">
+            <i class="bi bi-info-circle me-2"></i>
+            Để đổi mật khẩu, vui lòng <a href="/Account/ChangePassword" style="color: var(--gold); text-decoration: none;"><strong>nhấp vào đây</strong></a>
+        </p>
+    </div>
+</div>

@@ -14,6 +14,9 @@ public class AppDbContext : DbContext
     public DbSet<Chapter> Chapters { get; set; }
     public DbSet<Comment> Comments { get; set; }
     public DbSet<Rating>  Ratings  { get; set; }
+    public DbSet<ReadingHistory> ReadingHistories { get; set; }
+    public DbSet<UserStoryFollow> UserStoryFollows { get; set; }
+    public DbSet<UserFavoriteStory> UserFavoriteStories { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -45,6 +48,61 @@ public class AppDbContext : DbContext
             .WithMany(u => u.Stories)
             .HasForeignKey(s => s.AuthorId)
             .OnDelete(DeleteBehavior.SetNull);
+
+        // ReadingHistory FK cấu hình để tránh cascade cycles
+        modelBuilder.Entity<ReadingHistory>()
+            .HasOne(h => h.Story)
+            .WithMany()
+            .HasForeignKey(h => h.StoryId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        modelBuilder.Entity<ReadingHistory>()
+            .HasOne(h => h.Chapter)
+            .WithMany()
+            .HasForeignKey(h => h.ChapterId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        modelBuilder.Entity<ReadingHistory>()
+            .HasOne(h => h.User)
+            .WithMany()
+            .HasForeignKey(h => h.UserId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        // UserStoryFollow cấu hình: One user can follow many stories
+        modelBuilder.Entity<UserStoryFollow>()
+            .HasOne(uf => uf.User)
+            .WithMany(u => u.FollowedStories)
+            .HasForeignKey(uf => uf.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<UserStoryFollow>()
+            .HasOne(uf => uf.Story)
+            .WithMany(s => s.Followers)
+            .HasForeignKey(uf => uf.StoryId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Unique constraint: One user can only follow one story once
+        modelBuilder.Entity<UserStoryFollow>()
+            .HasIndex(uf => new { uf.UserId, uf.StoryId })
+            .IsUnique();
+
+        // UserFavoriteStory cấu hình: One user can favorite many stories
+        modelBuilder.Entity<UserFavoriteStory>()
+            .HasOne(uf => uf.User)
+            .WithMany(u => u.FavoriteStories)
+            .HasForeignKey(uf => uf.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<UserFavoriteStory>()
+            .HasOne(uf => uf.Story)
+            .WithMany(s => s.FavoritedBy)
+            .HasForeignKey(uf => uf.StoryId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Unique constraint: One user can only favorite one story once
+        modelBuilder.Entity<UserFavoriteStory>()
+            .HasIndex(uf => new { uf.UserId, uf.StoryId })
+            .IsUnique();
 
         // Seed dữ liệu thể loại mặc định
         modelBuilder.Entity<Genre>().HasData(

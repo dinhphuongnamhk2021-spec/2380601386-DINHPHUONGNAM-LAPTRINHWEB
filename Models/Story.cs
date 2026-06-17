@@ -36,6 +36,8 @@ public class Story
     public ICollection<StoryGenre> StoryGenres { get; set; } = new List<StoryGenre>();
     public ICollection<Comment>    Comments    { get; set; } = new List<Comment>();
     public ICollection<Rating>     Ratings     { get; set; } = new List<Rating>();
+    public ICollection<UserStoryFollow> Followers { get; set; } = new List<UserStoryFollow>();
+    public ICollection<UserFavoriteStory> FavoritedBy { get; set; } = new List<UserFavoriteStory>();
 
     // Computed (không lưu DB)
     public int    ChapterCount => Chapters?.Count ?? 0;

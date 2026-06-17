@@ -260,9 +260,18 @@
                     <a asp-controller="Story" asp-action="Index" class="btn btn-outline-primary">
                         <i class="bi bi-house me-2"></i>Trang Chủ
                     </a>
+                    <a asp-controller="Story" asp-action="Favorites" class="btn btn-outline-info">
+                        <i class="bi bi-heart me-2"></i>Truyện Yêu Thích
+                    </a>
+                    <a asp-action="EditProfile" asp-route-userId="@Model.Id" class="btn btn-outline-secondary">
+                        <i class="bi bi-pencil me-2"></i>Chỉnh Sửa Hồ Sơ
+                    </a>
+                    <a asp-action="ChangePassword" class="btn btn-outline-warning">
+                        <i class="bi bi-lock me-2"></i>Đổi Mật Khẩu
+                    </a>
                     @if (Model.Role == "Admin")
                     {
-                        <a asp-controller="Admin" asp-action="Index" class="btn btn-outline-warning">
+                        <a asp-controller="Admin" asp-action="Index" class="btn btn-outline-danger">
                             <i class="bi bi-gear me-2"></i>Quản Trị
                         </a>
                     }

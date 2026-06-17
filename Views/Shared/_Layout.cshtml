@@ -99,6 +99,14 @@
                             <i class="bi bi-check-circle"></i>Hoàn Thành
                         </a>
                     </li>
+                    @if (Context.Session.GetString("UserName") != null)
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Story" asp-action="History">
+                                <i class="bi bi-clock-history"></i>Lịch sử
+                            </a>
+                        </li>
+                    }
                 </ul>
                 <ul class="navbar-nav ms-auto">
                     @if (Context.Session.GetString("UserName") != null)

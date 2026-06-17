@@ -432,11 +432,44 @@
                             <i class="bi bi-book-open me-2"></i>Đọc Ngay
                         </a>
                     }
+
+                    @{
+                        var isLoggedIn = !string.IsNullOrEmpty(Context.Session.GetString("UserName"));
+                    }
+
+                    @if (isLoggedIn)
+                    {
+                        <button id="followBtn" class="btn-read ms-2" style="background: #6b7280;">
+                            <i class="bi bi-heart me-2"></i><span id="followBtnText">Theo dõi</span>
+                        </button>
+                        <button id="favoriteBtn" class="btn-read ms-2" style="background: #f59e0b;">
+                            <i class="bi bi-bookmark me-2"></i><span id="favoriteBtnText">Lưu yêu thích</span>
+                        </button>
+                    }
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+@* ─── USER ACTIONS (Login only) ─────────────────────────────────────────────── *@
+@{
+    var userForHistoryLink = Context.Session.GetString("UserName");
+    if (!string.IsNullOrEmpty(userForHistoryLink))
+    {
+        <div class="container py-2">
+            <div class="row">
+                <div class="col-lg-8">
+                    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                        <a href="/Story/History" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-clock-history me-1"></i>Lịch sử đọc
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}
 
 @* ─── MAIN CONTENT ───────────────────────────────────────────────────────────── *@
 <div class="container py-4">
@@ -768,6 +801,79 @@
                     }
                 });
             });
+
+            // --- Follow/Unfollow Logic ---
+            var storyId = @Model.Id;
+            var $followBtn = $('#followBtn');
+            var $followBtnText = $('#followBtnText');
+
+            // Kiểm tra trạng thái theo dõi khi tải trang
+            if ($followBtn.length) {
+                $.get('/Story/IsFollowing/' + storyId, function(data) {
+                    if (data.isLoggedIn && data.isFollowing) {
+                        $followBtn.css('background', '#e74c3c');
+                        $followBtnText.text('Bỏ theo dõi');
+                    }
+                });
+
+                // Xử lý click button
+                $followBtn.on('click', function() {
+                    var isFollowing = $followBtn.css('background') === 'rgb(231, 76, 60)' || 
+                                    $followBtn.css('background') === '#e74c3c';
+                    var url = isFollowing ? '/Story/UnfollowStory' : '/Story/FollowStory';
+
+                    $.post(url, { storyId: storyId }, function(response) {
+                        if (response.success) {
+                            if (isFollowing) {
+                                $followBtn.css('background', '#6b7280');
+                                $followBtnText.text('Theo dõi');
+                            } else {
+                                $followBtn.css('background', '#e74c3c');
+                                $followBtnText.text('Bỏ theo dõi');
+                            }
+                            alert(response.message);
+                        } else {
+                            alert(response.message);
+                        }
+                    });
+                });
+            }
+
+            // --- Favorite/Bookmark Logic ---
+            var $favoriteBtn = $('#favoriteBtn');
+            var $favoriteBtnText = $('#favoriteBtnText');
+
+            // Kiểm tra trạng thái yêu thích khi tải trang
+            if ($favoriteBtn.length) {
+                $.get('/Story/IsFavorite/' + storyId, function(data) {
+                    if (data.isLoggedIn && data.isFavorite) {
+                        $favoriteBtn.css('background', '#d97706');
+                        $favoriteBtnText.text('Đã lưu yêu thích');
+                    }
+                });
+
+                // Xử lý click button
+                $favoriteBtn.on('click', function() {
+                    var isFavorite = $favoriteBtn.css('background') === 'rgb(217, 119, 6)' || 
+                                    $favoriteBtn.css('background') === '#d97706';
+                    var url = isFavorite ? '/Story/RemoveFavorite' : '/Story/AddFavorite';
+
+                    $.post(url, { storyId: storyId }, function(response) {
+                        if (response.success) {
+                            if (isFavorite) {
+                                $favoriteBtn.css('background', '#f59e0b');
+                                $favoriteBtnText.text('Lưu yêu thích');
+                            } else {
+                                $favoriteBtn.css('background', '#d97706');
+                                $favoriteBtnText.text('Đã lưu yêu thích');
+                            }
+                            alert(response.message);
+                        } else {
+                            alert(response.message);
+                        }
+                    });
+                });
+            }
         });
     </script>
 }

@@ -1,0 +1,35 @@
+@model IEnumerable<DOANLAPTRINHWWEB.Models.ReadingHistory>
+@{
+    ViewData["Title"] = "Lịch sử đọc truyện";
+}
+<div class="container mt-4">
+    <h2 class="mb-4" style="color:#e8a045;">Lịch sử đọc truyện</h2>
+    @if (!Model.Any()) {
+        <p class="text-muted">Bạn chưa có lịch sử đọc nào.</p>
+    } else {
+        <table class="table table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>Truyện</th>
+                    <th>Chương</th>
+                    <th>Lần cuối đọc</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model) {
+                    <tr>
+                        <td>@item.Story.Title</td>
+                        <td>@item.Chapter.Title</td>
+                        <td>@item.LastReadAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>
+                            <a asp-controller="Story" asp-action="Continue" asp-route-historyId="@item.Id" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-arrow-right"></i> Tiếp tục
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

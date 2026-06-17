@@ -26,4 +26,6 @@ public class User
 
     // Navigation properties
     public ICollection<Story> Stories { get; set; } = new List<Story>();
+    public ICollection<UserStoryFollow> FollowedStories { get; set; } = new List<UserStoryFollow>();
+    public ICollection<UserFavoriteStory> FavoriteStories { get; set; } = new List<UserFavoriteStory>();
 }

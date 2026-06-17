@@ -212,6 +212,136 @@ public class AccountController : Controller
         return View(user);
     }
 
+    // ── GET /Account/EditProfile ──────────────────────────────
+    public async Task<IActionResult> EditProfile()
+    {
+        var userId = HttpContext.Session.GetInt32("UserId");
+        if (userId == null)
+        {
+            return RedirectToAction("Login");
+        }
+
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        if (user == null)
+        {
+            return RedirectToAction("Login");
+        }
+
+        return View(user);
+    }
+
+    // ── POST /Account/EditProfile ─────────────────────────────
+    [HttpPost]
+    public async Task<IActionResult> EditProfile(int userId, string userName, string email)
+    {
+        // Verify that user can only edit their own profile
+        var currentUserId = HttpContext.Session.GetInt32("UserId");
+        if (currentUserId != userId)
+        {
+            return Unauthorized();
+        }
+
+        if (string.IsNullOrEmpty(userName) || string.IsNullOrEmpty(email))
+        {
+            ViewBag.Error = "Vui lòng điền đầy đủ thông tin";
+            return View();
+        }
+
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        if (user == null)
+        {
+            return RedirectToAction("Login");
+        }
+
+        // Check if new username is already taken (by someone else)
+        if (user.UserName != userName && await _db.Users.AnyAsync(u => u.UserName == userName))
+        {
+            ViewBag.Error = "Tên đăng nhập đã tồn tại";
+            return View(user);
+        }
+
+        // Check if new email is already taken (by someone else)
+        if (user.Email != email && await _db.Users.AnyAsync(u => u.Email == email))
+        {
+            ViewBag.Error = "Email đã tồn tại";
+            return View(user);
+        }
+
+        user.UserName = userName;
+        user.Email = email;
+
+        _db.Users.Update(user);
+        await _db.SaveChangesAsync();
+
+        // Update session with new username
+        HttpContext.Session.SetString("UserName", user.UserName);
+
+        ViewBag.Success = "Cập nhật thông tin cá nhân thành công!";
+        return View(user);
+    }
+
+    // ── GET /Account/ChangePassword ────────────────────────────
+    public IActionResult ChangePassword()
+    {
+        var userId = HttpContext.Session.GetInt32("UserId");
+        if (userId == null)
+        {
+            return RedirectToAction("Login");
+        }
+
+        return View();
+    }
+
+    // ── POST /Account/ChangePassword ───────────────────────────
+    [HttpPost]
+    public async Task<IActionResult> ChangePassword(string currentPassword, string newPassword, string confirmPassword)
+    {
+        var userId = HttpContext.Session.GetInt32("UserId");
+        if (userId == null)
+        {
+            return RedirectToAction("Login");
+        }
+
+        if (string.IsNullOrEmpty(currentPassword) || string.IsNullOrEmpty(newPassword))
+        {
+            ViewBag.Error = "Vui lòng điền đầy đủ thông tin";
+            return View();
+        }
+
+        if (newPassword != confirmPassword)
+        {
+            ViewBag.Error = "Mật khẩu xác nhận không khớp";
+            return View();
+        }
+
+        if (newPassword.Length < 6)
+        {
+            ViewBag.Error = "Mật khẩu mới phải có ít nhất 6 ký tự";
+            return View();
+        }
+
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        if (user == null)
+        {
+            return RedirectToAction("Login");
+        }
+
+        // Verify current password
+        if (user.PasswordHash != HashPassword(currentPassword))
+        {
+            ViewBag.Error = "Mật khẩu hiện tại không đúng";
+            return View();
+        }
+
+        // Update password
+        user.PasswordHash = HashPassword(newPassword);
+        _db.Users.Update(user);
+        await _db.SaveChangesAsync();
+
+        ViewBag.Success = "Đổi mật khẩu thành công! Vui lòng đăng nhập lại.";
+        return View();
+    }
+
     // ── Helper: Simple password hashing ───────────────────────
     private string HashPassword(string password)
     {

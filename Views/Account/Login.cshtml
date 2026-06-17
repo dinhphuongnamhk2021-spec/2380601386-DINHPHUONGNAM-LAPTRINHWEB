@@ -5,6 +5,14 @@
 @* ─── CSS riêng cho trang này ───────────────────────────────────────────── *@
 <style>
     :root {
+        --ink: #ffffff;
+        --ink2: #f0f0f0;
+        --gold: #e8a045;
+        --gold-soft: #f5c878;
+        --muted: #6b7280;
+    }
+    
+    .dark {
         --ink: #1a1a2e;
         --ink2: #16213e;
         --gold: #e8a045;
@@ -199,6 +207,17 @@
     .back-link a:hover {
         color: var(--gold);
     }
+    .theme-toggle {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: var(--ink);
+        color: var(--gold);
+        border: none;
+        border-radius: 5px;
+        padding: 5px 10px;
+        cursor: pointer;
+    }
 </style>
 
 @* Google Font Playfair Display *@
@@ -251,4 +270,30 @@
             <a asp-controller="Story" asp-action="Index">← Quay lại trang chủ</a>
         </div>
     </div>
+<script>
+(function(){
+    const toggle = document.getElementById('theme-toggle');
+    const applyTheme = (theme) => {
+        if (theme === 'dark') {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    };
+    const saved = localStorage.getItem('theme');
+    if (saved) {
+        applyTheme(saved);
+    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        applyTheme('dark');
+    }
+    toggle.addEventListener('click', () => {
+        const isDark = document.documentElement.classList.toggle('dark');
+        const theme = isDark ? 'dark' : 'light';
+        localStorage.setItem('theme', theme);
+        toggle.textContent = isDark ? 'Light Mode' : 'Dark Mode';
+    });
+    // Set initial button text
+    toggle.textContent = document.documentElement.classList.contains('dark') ? 'Light Mode' : 'Dark Mode';
+})();
+</script>
 </div>

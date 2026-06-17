@@ -114,6 +114,39 @@ public class StoryController : Controller
         chapter.Story.ViewCount++;
         await _db.SaveChangesAsync();
 
+        // ---- Lưu lịch sử đọc (chỉ dành cho người đã đăng nhập) ----
+        var userId    = HttpContext.Session.GetInt32("UserId");   // int?
+        var sessionId = HttpContext.Session.Id;
+
+        if (userId.HasValue)
+        {
+            // Tìm bản ghi lịch sử theo UserId + StoryId
+            var history = await _db.ReadingHistories
+                .FirstOrDefaultAsync(h => h.UserId == userId && h.StoryId == chapter.StoryId);
+
+            if (history == null)
+            {
+                history = new ReadingHistory
+                {
+                    UserId     = userId,
+                    SessionId  = null,
+                    StoryId    = chapter.StoryId,
+                    ChapterId  = chapter.Id,
+                    LastReadAt = DateTime.UtcNow
+                };
+                _db.ReadingHistories.Add(history);
+            }
+            else
+            {
+                // Cập nhật chương mới nhất
+                history.ChapterId  = chapter.Id;
+                history.LastReadAt = DateTime.UtcNow;
+            }
+            await _db.SaveChangesAsync();
+        }
+        // Người chưa đăng nhập: không lưu lịch sử
+        // ----------------------------------------------------------
+
         ViewBag.PrevChapter = prevChapter;
         ViewBag.NextChapter = nextChapter;
         ViewBag.AllChapters = allChapters;
@@ -166,6 +199,37 @@ public class StoryController : Controller
         });
     }
 
+    // ── GET /Story/History ──────────────────────────────
+    public async Task<IActionResult> History()
+    {
+        // Chỉ dành cho người đã đăng nhập
+        var userId = HttpContext.Session.GetInt32("UserId");
+        if (!userId.HasValue)
+            return RedirectToAction("Login", "Account");
+
+        var histories = await _db.ReadingHistories
+            .Include(h => h.Story)
+            .Include(h => h.Chapter)
+            .Where(h => h.UserId == userId)
+            .OrderByDescending(h => h.LastReadAt)
+            .ToListAsync();
+
+        return View(histories);
+    }
+
+    // ── GET /Story/Continue/{historyId} ───────────────
+    public async Task<IActionResult> Continue(int historyId)
+    {
+        // Chỉ dành cho người đã đăng nhập
+        if (!HttpContext.Session.GetInt32("UserId").HasValue)
+            return RedirectToAction("Login", "Account");
+
+        var history = await _db.ReadingHistories
+            .FirstOrDefaultAsync(h => h.Id == historyId);
+        if (history == null) return NotFound();
+        return RedirectToAction("Chapter", new { id = history.ChapterId });
+    }
+
     // ── POST /Story/RateStory ─────────────────────────────────
     [HttpPost]
     public async Task<IActionResult> RateStory(int storyId, int score)
@@ -207,5 +271,205 @@ public class StoryController : Controller
             message = "Cảm ơn bạn đã đánh giá!"
         });
     }
-}
 
+    // ── POST /Story/FollowStory ────────────────────────────────
+    [HttpPost]
+    public async Task<IActionResult> FollowStory(int storyId)
+    {
+        // Chỉ dành cho người đã đăng nhập
+        var userId = HttpContext.Session.GetInt32("UserId");
+        if (!userId.HasValue)
+        {
+            return Json(new { success = false, message = "Vui lòng đăng nhập để theo dõi truyện." });
+        }
+
+        // Kiểm tra xem truyện có tồn tại không
+        var story = await _db.Stories.FindAsync(storyId);
+        if (story == null)
+        {
+            return NotFound(new { success = false, message = "Truyện không tồn tại." });
+        }
+
+        // Kiểm tra xem đã theo dõi chưa
+        var existingFollow = await _db.UserStoryFollows
+            .FirstOrDefaultAsync(uf => uf.UserId == userId && uf.StoryId == storyId);
+
+        if (existingFollow != null)
+        {
+            return Json(new { success = false, message = "Bạn đã theo dõi truyện này rồi." });
+        }
+
+        // Thêm theo dõi
+        var follow = new UserStoryFollow
+        {
+            UserId = userId.Value,
+            StoryId = storyId,
+            FollowedAt = DateTime.Now
+        };
+
+        _db.UserStoryFollows.Add(follow);
+        await _db.SaveChangesAsync();
+
+        return Json(new { success = true, message = "Bạn đã theo dõi truyện này!" });
+    }
+
+    // ── POST /Story/UnfollowStory ──────────────────────────────
+    [HttpPost]
+    public async Task<IActionResult> UnfollowStory(int storyId)
+    {
+        // Chỉ dành cho người đã đăng nhập
+        var userId = HttpContext.Session.GetInt32("UserId");
+        if (!userId.HasValue)
+        {
+            return Json(new { success = false, message = "Vui lòng đăng nhập để bỏ theo dõi truyện." });
+        }
+
+        // Tìm và xóa theo dõi
+        var follow = await _db.UserStoryFollows
+            .FirstOrDefaultAsync(uf => uf.UserId == userId && uf.StoryId == storyId);
+
+        if (follow == null)
+        {
+            return Json(new { success = false, message = "Bạn chưa theo dõi truyện này." });
+        }
+
+        _db.UserStoryFollows.Remove(follow);
+        await _db.SaveChangesAsync();
+
+        return Json(new { success = true, message = "Bạn đã bỏ theo dõi truyện này." });
+    }
+
+    // ── GET /Story/IsFollowing/{storyId} ───────────────────────
+    [HttpGet]
+    public async Task<IActionResult> IsFollowing(int storyId)
+    {
+        var userId = HttpContext.Session.GetInt32("UserId");
+        if (!userId.HasValue)
+        {
+            return Json(new { isFollowing = false, isLoggedIn = false });
+        }
+
+        var isFollowing = await _db.UserStoryFollows
+            .AnyAsync(uf => uf.UserId == userId && uf.StoryId == storyId);
+
+        return Json(new { isFollowing = isFollowing, isLoggedIn = true });
+    }
+
+    // ── POST /Story/AddFavorite ────────────────────────────────
+    [HttpPost]
+    public async Task<IActionResult> AddFavorite(int storyId)
+    {
+        // Chỉ dành cho người đã đăng nhập
+        var userId = HttpContext.Session.GetInt32("UserId");
+        if (!userId.HasValue)
+        {
+            return Json(new { success = false, message = "Vui lòng đăng nhập để lưu truyện yêu thích." });
+        }
+
+        // Kiểm tra xem truyện có tồn tại không
+        var story = await _db.Stories.FindAsync(storyId);
+        if (story == null)
+        {
+            return NotFound(new { success = false, message = "Truyện không tồn tại." });
+        }
+
+        // Kiểm tra xem đã lưu chưa
+        var existingFavorite = await _db.UserFavoriteStories
+            .FirstOrDefaultAsync(uf => uf.UserId == userId && uf.StoryId == storyId);
+
+        if (existingFavorite != null)
+        {
+            return Json(new { success = false, message = "Truyện này đã được thêm vào danh sách yêu thích." });
+        }
+
+        // Thêm yêu thích
+        var favorite = new UserFavoriteStory
+        {
+            UserId = userId.Value,
+            StoryId = storyId,
+            AddedAt = DateTime.Now
+        };
+
+        _db.UserFavoriteStories.Add(favorite);
+        await _db.SaveChangesAsync();
+
+        return Json(new { success = true, message = "Truyện đã được thêm vào danh sách yêu thích!" });
+    }
+
+    // ── POST /Story/RemoveFavorite ─────────────────────────────
+    [HttpPost]
+    public async Task<IActionResult> RemoveFavorite(int storyId)
+    {
+        // Chỉ dành cho người đã đăng nhập
+        var userId = HttpContext.Session.GetInt32("UserId");
+        if (!userId.HasValue)
+        {
+            return Json(new { success = false, message = "Vui lòng đăng nhập để bỏ lưu truyện yêu thích." });
+        }
+
+        // Tìm và xóa yêu thích
+        var favorite = await _db.UserFavoriteStories
+            .FirstOrDefaultAsync(uf => uf.UserId == userId && uf.StoryId == storyId);
+
+        if (favorite == null)
+        {
+            return Json(new { success = false, message = "Truyện này không nằm trong danh sách yêu thích." });
+        }
+
+        _db.UserFavoriteStories.Remove(favorite);
+        await _db.SaveChangesAsync();
+
+        return Json(new { success = true, message = "Truyện đã được bỏ khỏi danh sách yêu thích." });
+    }
+
+    // ── GET /Story/IsFavorite/{storyId} ────────────────────────
+    [HttpGet]
+    public async Task<IActionResult> IsFavorite(int storyId)
+    {
+        var userId = HttpContext.Session.GetInt32("UserId");
+        if (!userId.HasValue)
+        {
+            return Json(new { isFavorite = false, isLoggedIn = false });
+        }
+
+        var isFavorite = await _db.UserFavoriteStories
+            .AnyAsync(uf => uf.UserId == userId && uf.StoryId == storyId);
+
+        return Json(new { isFavorite = isFavorite, isLoggedIn = true });
+    }
+
+    // ── GET /Story/Favorites ───────────────────────────────────
+    public async Task<IActionResult> Favorites(int page = 1)
+    {
+        var userId = HttpContext.Session.GetInt32("UserId");
+        if (!userId.HasValue)
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
+        const int pageSize = 12;
+
+        var query = _db.UserFavoriteStories
+            .Where(uf => uf.UserId == userId)
+            .Include(uf => uf.Story)
+                .ThenInclude(s => s.StoryGenres)
+                .ThenInclude(sg => sg.Genre)
+            .Include(uf => uf.Story)
+                .ThenInclude(s => s.Ratings)
+            .OrderByDescending(uf => uf.AddedAt);
+
+        var total = await query.CountAsync();
+        var favorites = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        var stories = favorites.Select(f => f.Story).ToList();
+
+        ViewBag.Page = page;
+        ViewBag.TotalPages = (total + pageSize - 1) / pageSize;
+        ViewBag.Total = total;
+
+        return View(stories);
+    }
+}
