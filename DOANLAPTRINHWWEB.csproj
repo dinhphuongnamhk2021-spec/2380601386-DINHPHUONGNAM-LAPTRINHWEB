@@ -7,6 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="2380601386-DINHPHUONGNAM-LAPTRINHWEB\**" />
+    <Content Remove="2380601386-DINHPHUONGNAM-LAPTRINHWEB\**" />
+    <EmbeddedResource Remove="2380601386-DINHPHUONGNAM-LAPTRINHWEB\**" />
+    <None Remove="2380601386-DINHPHUONGNAM-LAPTRINHWEB\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.0" />
   </ItemGroup>
