@@ -83,9 +83,14 @@ public class StoryController : Controller
 
         if (story == null) return NotFound();
 
-        // Tăng lượt xem
-        story.ViewCount++;
-        await _db.SaveChangesAsync();
+        // Tăng lượt xem (chỉ đếm 1 lần mỗi session cho mỗi truyện)
+        var viewedKey = $"Viewed_Story_{id}";
+        if (HttpContext.Session.GetString(viewedKey) == null)
+        {
+            story.ViewCount++;
+            await _db.SaveChangesAsync();
+            HttpContext.Session.SetString(viewedKey, "1");
+        }
 
         return View(story);
     }
@@ -110,9 +115,14 @@ public class StoryController : Controller
         var prevChapter = currentIndex > 0 ? allChapters[currentIndex - 1] : null;
         var nextChapter = currentIndex < allChapters.Count - 1 ? allChapters[currentIndex + 1] : null;
 
-        // Tăng lượt xem truyện
-        chapter.Story.ViewCount++;
-        await _db.SaveChangesAsync();
+        // Tăng lượt xem truyện (chỉ đếm 1 lần mỗi session cho mỗi truyện)
+        var viewedKey = $"Viewed_Story_{chapter.StoryId}";
+        if (HttpContext.Session.GetString(viewedKey) == null)
+        {
+            chapter.Story.ViewCount++;
+            await _db.SaveChangesAsync();
+            HttpContext.Session.SetString(viewedKey, "1");
+        }
 
         // ---- Lưu lịch sử đọc (chỉ dành cho người đã đăng nhập) ----
         var userId    = HttpContext.Session.GetInt32("UserId");   // int?

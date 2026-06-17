@@ -53,19 +53,29 @@ if (!string.IsNullOrWhiteSpace(googleClientId) && !string.IsNullOrWhiteSpace(goo
             var user = payload.RootElement;
             var identity = (ClaimsIdentity)context.Principal!.Identity!;
 
-            if (user.TryGetProperty("id", out var id))
+            string? googleId = null;
+            if (user.TryGetProperty("id", out var idProp) && idProp.ValueKind != JsonValueKind.Null)
             {
-                identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, id.GetString() ?? ""));
+                googleId = idProp.GetString();
+            }
+            else if (user.TryGetProperty("sub", out var subProp) && subProp.ValueKind != JsonValueKind.Null)
+            {
+                googleId = subProp.GetString();
             }
 
-            if (user.TryGetProperty("name", out var name))
+            if (!string.IsNullOrEmpty(googleId))
             {
-                identity.AddClaim(new Claim(ClaimTypes.Name, name.GetString() ?? ""));
+                identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, googleId));
             }
 
-            if (user.TryGetProperty("email", out var email))
+            if (user.TryGetProperty("name", out var nameProp) && nameProp.ValueKind != JsonValueKind.Null)
             {
-                identity.AddClaim(new Claim(ClaimTypes.Email, email.GetString() ?? ""));
+                identity.AddClaim(new Claim(ClaimTypes.Name, nameProp.GetString() ?? ""));
+            }
+
+            if (user.TryGetProperty("email", out var emailProp) && emailProp.ValueKind != JsonValueKind.Null)
+            {
+                identity.AddClaim(new Claim(ClaimTypes.Email, emailProp.GetString() ?? ""));
             }
         };
     });

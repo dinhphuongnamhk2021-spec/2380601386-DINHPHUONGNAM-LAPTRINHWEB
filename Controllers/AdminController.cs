@@ -34,7 +34,8 @@ public class AdminController : Controller
             RecentStories = await _db.Stories
                 .Include(s => s.Author)
                 .OrderByDescending(s => s.CreatedAt)
-                .Take(5).ToListAsync()
+                .Take(5).ToListAsync(),
+            AllStories = await _db.Stories.OrderByDescending(s => s.ViewCount).ToListAsync()
         };
 
         return View(stats);
@@ -341,7 +342,85 @@ public class AdminController : Controller
 
         return RedirectToAction("Chapters", new { id = storyId });
     }
+
+    // ── POST /Admin/ChangeRole ─────────────────────────────────
+    [HttpPost]
+    public async Task<IActionResult> ChangeRole(int userId, string role)
+    {
+        var currentRole = HttpContext.Session.GetString("Role");
+        if (currentRole != "Admin")
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
+        var currentUserId = HttpContext.Session.GetInt32("UserId");
+        if (currentUserId == userId)
+        {
+            TempData["Error"] = "Bạn không thể tự đổi vai trò của chính mình.";
+            return RedirectToAction("Users");
+        }
+
+        var user = await _db.Users.FindAsync(userId);
+        if (user == null) return NotFound();
+
+        if (user.Role == "Admin")
+        {
+            TempData["Error"] = "Bạn không có quyền thay đổi vai trò hoặc hạ cấp quản trị viên khác.";
+            return RedirectToAction("Users");
+        }
+
+        if (role == "Admin" || role == "User")
+        {
+            user.Role = role;
+            await _db.SaveChangesAsync();
+            TempData["Success"] = $"Đã thay đổi vai trò của người dùng '{user.UserName}' thành '{role}'.";
+        }
+        else
+        {
+            TempData["Error"] = "Vai trò không hợp lệ.";
+        }
+
+        return RedirectToAction("Users");
+    }
+
+    // ── POST /Admin/DeleteUser ──────────────────────────────────
+    [HttpPost]
+    public async Task<IActionResult> DeleteUser(int id)
+    {
+        var currentRole = HttpContext.Session.GetString("Role");
+        if (currentRole != "Admin")
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
+        var currentUserId = HttpContext.Session.GetInt32("UserId");
+        if (currentUserId == id)
+        {
+            TempData["Error"] = "Bạn không thể tự xóa tài khoản của chính mình.";
+            return RedirectToAction("Users");
+        }
+
+        var user = await _db.Users
+            .Include(u => u.Stories)
+            .FirstOrDefaultAsync(u => u.Id == id);
+
+        if (user == null) return NotFound();
+
+        // Nullify AuthorId for stories published by this user to avoid FK issues
+        var userStories = await _db.Stories.Where(s => s.AuthorId == id).ToListAsync();
+        foreach (var story in userStories)
+        {
+            story.AuthorId = null;
+        }
+
+        _db.Users.Remove(user);
+        await _db.SaveChangesAsync();
+
+        TempData["Success"] = $"Đã xóa người dùng '{user.UserName}' thành công.";
+        return RedirectToAction("Users");
+    }
 }
+
 
 public class AdminViewModel
 {
@@ -351,4 +430,5 @@ public class AdminViewModel
     public int TotalViews { get; set; }
     public List<User> RecentUsers { get; set; } = new();
     public List<Story> RecentStories { get; set; } = new();
+    public List<Story> AllStories { get; set; } = new();
 }

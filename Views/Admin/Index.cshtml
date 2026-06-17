@@ -169,7 +169,7 @@
         <div class="admin-card">
             <div class="admin-card-header">
                 <h3 class="admin-card-title">
-                    <i class="bi bi-bar-chart-line text-warning"></i> Thống kê Lượt xem Truyện Mới
+                    <i class="bi bi-bar-chart-line text-warning"></i> Thống kê Lượt xem Tất cả Truyện
                 </h3>
             </div>
             <div style="position: relative; height: 320px; width: 100%;">
@@ -317,8 +317,8 @@
     <script>
         $(document).ready(function() {
             // Chuẩn bị dữ liệu từ Model
-            var labels = [@Html.Raw(string.Join(",", Model.RecentStories.Select(s => $"\"{s.Title}\"")))];
-            var dataViews = [@string.Join(",", Model.RecentStories.Select(s => s.ViewCount))];
+            var labels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.AllStories.Select(s => s.Title)));
+            var dataViews = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.AllStories.Select(s => s.ViewCount)));
 
             var ctx = document.getElementById('viewsChart').getContext('2d');
             var viewsChart = new Chart(ctx, {

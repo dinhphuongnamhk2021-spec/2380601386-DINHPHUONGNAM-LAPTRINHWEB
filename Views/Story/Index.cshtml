@@ -292,18 +292,19 @@
                 @foreach (var s in Model.FeaturedStories)
                 {
                     <div class="featured-card">
-                        <img class="featured-img"
-                             src="@s.CoverImage"
-                             alt="@s.Title"
-                             loading="lazy"
-                             referrerpolicy="no-referrer">
-                        <div class="featured-overlay">
-                            <a asp-controller="Story" asp-action="Detail" asp-route-id="@s.Id"
-                               class="featured-title d-block">@s.Title</a>
-                            <div class="featured-rating">
-                                ★ @s.Rating.ToString("0.0") &nbsp;·&nbsp; @s.Genre
+                        <a asp-controller="Story" asp-action="Detail" asp-route-id="@s.Id" class="text-decoration-none d-block h-100">
+                            <img class="featured-img"
+                                 src="@s.CoverImage"
+                                 alt="@s.Title"
+                                 loading="lazy"
+                                 referrerpolicy="no-referrer">
+                            <div class="featured-overlay">
+                                <span class="featured-title d-block">@s.Title</span>
+                                <div class="featured-rating">
+                                    ★ @s.Rating.ToString("0.0") &nbsp;·&nbsp; @s.Genre
+                                </div>
                             </div>
-                        </div>
+                        </a>
                     </div>
                 }
             </div>
@@ -322,11 +323,13 @@
                 {
                     <div class="col">
                         <div class="story-card">
-                            <img class="story-card-img"
-                                 src="@s.CoverImage"
-                                 alt="@s.Title"
-                                 loading="lazy"
-                                 referrerpolicy="no-referrer">
+                            <a asp-controller="Story" asp-action="Detail" asp-route-id="@s.Id" class="d-block text-decoration-none">
+                                <img class="story-card-img"
+                                     src="@s.CoverImage"
+                                     alt="@s.Title"
+                                     loading="lazy"
+                                     referrerpolicy="no-referrer">
+                            </a>
                             <div class="story-card-body">
                                 <a asp-controller="Story" asp-action="Detail" asp-route-id="@s.Id" class="story-title">@s.Title</a>
                                 <div class="story-author">@s.AuthorName</div>
@@ -413,11 +416,13 @@
             {
                 <div class="col">
                     <div class="story-card">
-                        <img class="story-card-img"
-                             src="@s.CoverImage"
-                             alt="@s.Title"
-                             loading="lazy"
-                             referrerpolicy="no-referrer">
+                        <a asp-controller="Story" asp-action="Detail" asp-route-id="@s.Id" class="d-block text-decoration-none">
+                            <img class="story-card-img"
+                                 src="@s.CoverImage"
+                                 alt="@s.Title"
+                                 loading="lazy"
+                                 referrerpolicy="no-referrer">
+                        </a>
                         <div class="story-card-body">
                             <a asp-controller="Story" asp-action="Detail" asp-route-id="@s.Id"
                                class="story-title">@s.Title</a>

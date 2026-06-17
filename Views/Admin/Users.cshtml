@@ -2,6 +2,7 @@
 @{
     ViewData["Title"] = "Quản Lý Người Dùng";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var currentUserId = Context.Session.GetInt32("UserId");
 }
 
 @section Styles {
@@ -67,60 +68,109 @@
     </style>
 }
 
-<div class="admin-card">
-    <div class="admin-card-header">
-        <h3 class="admin-card-title">
-            <i class="bi bi-people-fill text-primary"></i> Danh Sách Người Dùng
-        </h3>
-    </div>
-
-    <!-- Filters -->
-    <div class="filter-container">
-        <div class="search-wrapper">
-            <i class="bi bi-search"></i>
-            <input type="text" id="userSearchInput" class="form-control search-input" placeholder="Tìm kiếm theo tên đăng nhập hoặc email..." />
-        </div>
-    </div>
-
-    @if (Model.Any())
+    @if (TempData["Success"] != null)
     {
-        <div class="table-responsive">
-            <table class="admin-table" id="usersTable">
-                <thead>
-                    <tr>
-                        <th style="width: 80px;">ID</th>
-                        <th>Tên đăng nhập</th>
-                        <th>Email</th>
-                        <th>Vai trò</th>
-                        <th>Ngày tham gia</th>
-                        <th style="width: 150px; text-align: center;">Số truyện đã đăng</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var user in Model)
-                    {
-                        <tr class="user-row" data-username="@user.UserName.ToLower()" data-email="@user.Email.ToLower()">
-                            <td class="text-muted fw-bold">@user.Id</td>
-                            <td class="fw-semibold text-dark">@user.UserName</td>
-                            <td>@user.Email</td>
-                            <td>
-                                @if (user.Role == "Admin")
-                                {
-                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3 py-1">Admin</span>
-                                }
-                                else
-                                {
-                                    <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-3 py-1">User</span>
-                                }
-                            </td>
-                            <td class="text-muted">@user.CreatedAt.ToString("dd/MM/yyyy")</td>
-                            <td style="text-align: center;" class="fw-semibold">@user.Stories.Count</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4" role="alert" style="border-radius: 12px; background-color: #d1e7dd; color: #0f5132;">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-check-circle-fill me-2 fs-5"></i>
+                <div>@TempData["Success"]</div>
+                <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
         </div>
     }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4" role="alert" style="border-radius: 12px; background-color: #f8d7da; color: #842029;">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+                <div>@TempData["Error"]</div>
+                <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </div>
+    }
+
+    <div class="admin-card">
+        <div class="admin-card-header">
+            <h3 class="admin-card-title">
+                <i class="bi bi-people-fill text-primary"></i> Danh Sách Người Dùng
+            </h3>
+        </div>
+
+        <!-- Filters -->
+        <div class="filter-container">
+            <div class="search-wrapper">
+                <i class="bi bi-search"></i>
+                <input type="text" id="userSearchInput" class="form-control search-input" placeholder="Tìm kiếm theo tên đăng nhập hoặc email..." />
+            </div>
+        </div>
+
+        @if (Model.Any())
+        {
+            <div class="table-responsive">
+                <table class="admin-table" id="usersTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 80px;">ID</th>
+                            <th>Tên đăng nhập</th>
+                            <th>Email</th>
+                            <th>Vai trò</th>
+                            <th>Ngày tham gia</th>
+                            <th style="width: 150px; text-align: center;">Số truyện đã đăng</th>
+                            <th style="width: 280px; text-align: center;">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var user in Model)
+                        {
+                            <tr class="user-row" data-username="@user.UserName.ToLower()" data-email="@user.Email.ToLower()">
+                                <td class="text-muted fw-bold">@user.Id</td>
+                                <td class="fw-semibold text-dark">@user.UserName</td>
+                                <td>@user.Email</td>
+                                <td>
+                                    @if (user.Role == "Admin")
+                                    {
+                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3 py-1">Admin</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-3 py-1">User</span>
+                                    }
+                                </td>
+                                <td class="text-muted">@user.CreatedAt.ToString("dd/MM/yyyy")</td>
+                                <td style="text-align: center;" class="fw-semibold">@user.Stories.Count</td>
+                                <td style="text-align: center;">
+                                    @if (user.Id == currentUserId)
+                                    {
+                                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill px-3 py-1">Đang đăng nhập</span>
+                                    }
+                                    else
+                                    {
+                                        @if (user.Role != "Admin")
+                                        {
+                                            <form asp-action="ChangeRole" method="post" style="display:inline;">
+                                                <input type="hidden" name="userId" value="@user.Id" />
+                                                <input type="hidden" name="role" value="Admin" />
+                                                <button type="submit" class="btn btn-sm btn-outline-success rounded-pill px-3 py-1" onclick="return confirm('Bạn có chắc chắn muốn thăng cấp người dùng này lên Admin?')">
+                                                    <i class="bi bi-arrow-up-circle-fill"></i> Thăng cấp
+                                                </button>
+                                            </form>
+                                        }
+
+                                        <form asp-action="DeleteUser" method="post" style="display:inline; margin-left: 5px;">
+                                            <input type="hidden" name="id" value="@user.Id" />
+                                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1" onclick="return confirm('Bạn có chắc chắn muốn xóa người dùng này? Tất cả các truyện thuộc về người dùng này sẽ không còn tác giả liên kết.')">
+                                                <i class="bi bi-trash-fill"></i> Xóa
+                                            </button>
+                                        </form>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+
     else
     {
         <div class="text-center py-5 text-muted">
