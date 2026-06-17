@@ -363,6 +363,12 @@ public class AdminController : Controller
         var user = await _db.Users.FindAsync(userId);
         if (user == null) return NotFound();
 
+        if (user.Role == "Admin")
+        {
+            TempData["Error"] = "Bạn không có quyền thay đổi vai trò hoặc hạ cấp quản trị viên khác.";
+            return RedirectToAction("Users");
+        }
+
         if (role == "Admin" || role == "User")
         {
             user.Role = role;

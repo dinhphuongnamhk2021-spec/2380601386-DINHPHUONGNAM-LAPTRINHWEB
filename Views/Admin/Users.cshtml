@@ -145,23 +145,16 @@
                                     }
                                     else
                                     {
-                                        <form asp-action="ChangeRole" method="post" style="display:inline;">
-                                            <input type="hidden" name="userId" value="@user.Id" />
-                                            @if (user.Role == "Admin")
-                                            {
-                                                <input type="hidden" name="role" value="User" />
-                                                <button type="submit" class="btn btn-sm btn-outline-warning rounded-pill px-3 py-1" onclick="return confirm('Bạn có chắc chắn muốn hạ cấp người dùng này xuống User?')">
-                                                    <i class="bi bi-arrow-down-circle-fill"></i> Hạ cấp
-                                                </button>
-                                            }
-                                            else
-                                            {
+                                        @if (user.Role != "Admin")
+                                        {
+                                            <form asp-action="ChangeRole" method="post" style="display:inline;">
+                                                <input type="hidden" name="userId" value="@user.Id" />
                                                 <input type="hidden" name="role" value="Admin" />
                                                 <button type="submit" class="btn btn-sm btn-outline-success rounded-pill px-3 py-1" onclick="return confirm('Bạn có chắc chắn muốn thăng cấp người dùng này lên Admin?')">
                                                     <i class="bi bi-arrow-up-circle-fill"></i> Thăng cấp
                                                 </button>
-                                            }
-                                        </form>
+                                            </form>
+                                        }
 
                                         <form asp-action="DeleteUser" method="post" style="display:inline; margin-left: 5px;">
                                             <input type="hidden" name="id" value="@user.Id" />
