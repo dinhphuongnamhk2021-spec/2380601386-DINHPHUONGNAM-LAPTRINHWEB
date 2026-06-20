@@ -104,6 +104,36 @@ public class StoryController : Controller
 
         if (chapter == null) return NotFound();
 
+        // ---- Kiểm tra phân quyền chương VIP ----
+        var userId = HttpContext.Session.GetInt32("UserId");
+        ViewBag.IsLocked = false;
+        ViewBag.ChapterPrice = chapter.Price;
+        ViewBag.UserBalance = 0;
+
+        if (chapter.Price > 0)
+        {
+            if (!userId.HasValue)
+            {
+                // Chưa đăng nhập: Redirect sang Login kèm returnUrl
+                return RedirectToAction("Login", "Account", new { returnUrl = Request.Path + Request.QueryString });
+            }
+
+            var user = await _db.Users.FindAsync(userId.Value);
+            if (user == null) return RedirectToAction("Login", "Account");
+
+            ViewBag.UserBalance = user.Balance;
+
+            var role = HttpContext.Session.GetString("Role");
+            var isAdmin = role == "Admin";
+            var isAuthor = chapter.Story.AuthorId == userId.Value;
+            var isUnlocked = await _db.UserUnlockedChapters.AnyAsync(uc => uc.UserId == userId.Value && uc.ChapterId == id);
+
+            if (!isAdmin && !isAuthor && !isUnlocked)
+            {
+                ViewBag.IsLocked = true;
+            }
+        }
+
         // Lấy danh sách tất cả các chương của truyện này
         var allChapters = await _db.Chapters
             .Where(c => c.StoryId == chapter.StoryId)
@@ -115,53 +145,100 @@ public class StoryController : Controller
         var prevChapter = currentIndex > 0 ? allChapters[currentIndex - 1] : null;
         var nextChapter = currentIndex < allChapters.Count - 1 ? allChapters[currentIndex + 1] : null;
 
-        // Tăng lượt xem truyện (chỉ đếm 1 lần mỗi session cho mỗi truyện)
-        var viewedKey = $"Viewed_Story_{chapter.StoryId}";
-        if (HttpContext.Session.GetString(viewedKey) == null)
+        // Tăng lượt xem truyện (chỉ đếm 1 lần mỗi session cho mỗi truyện, và chỉ khi không bị khóa)
+        if (ViewBag.IsLocked == false)
         {
-            chapter.Story.ViewCount++;
-            await _db.SaveChangesAsync();
-            HttpContext.Session.SetString(viewedKey, "1");
-        }
-
-        // ---- Lưu lịch sử đọc (chỉ dành cho người đã đăng nhập) ----
-        var userId    = HttpContext.Session.GetInt32("UserId");   // int?
-        var sessionId = HttpContext.Session.Id;
-
-        if (userId.HasValue)
-        {
-            // Tìm bản ghi lịch sử theo UserId + StoryId
-            var history = await _db.ReadingHistories
-                .FirstOrDefaultAsync(h => h.UserId == userId && h.StoryId == chapter.StoryId);
-
-            if (history == null)
+            var viewedKey = $"Viewed_Story_{chapter.StoryId}";
+            if (HttpContext.Session.GetString(viewedKey) == null)
             {
-                history = new ReadingHistory
+                chapter.Story.ViewCount++;
+                await _db.SaveChangesAsync();
+                HttpContext.Session.SetString(viewedKey, "1");
+            }
+
+            // ---- Lưu lịch sử đọc (chỉ dành cho người đã đăng nhập và chương không bị khóa) ----
+            if (userId.HasValue)
+            {
+                var history = await _db.ReadingHistories
+                    .FirstOrDefaultAsync(h => h.UserId == userId && h.StoryId == chapter.StoryId);
+
+                if (history == null)
                 {
-                    UserId     = userId,
-                    SessionId  = null,
-                    StoryId    = chapter.StoryId,
-                    ChapterId  = chapter.Id,
-                    LastReadAt = DateTime.UtcNow
-                };
-                _db.ReadingHistories.Add(history);
+                    history = new ReadingHistory
+                    {
+                        UserId     = userId,
+                        SessionId  = null,
+                        StoryId    = chapter.StoryId,
+                        ChapterId  = chapter.Id,
+                        LastReadAt = DateTime.UtcNow
+                    };
+                    _db.ReadingHistories.Add(history);
+                }
+                else
+                {
+                    history.ChapterId  = chapter.Id;
+                    history.LastReadAt = DateTime.UtcNow;
+                }
+                await _db.SaveChangesAsync();
             }
-            else
-            {
-                // Cập nhật chương mới nhất
-                history.ChapterId  = chapter.Id;
-                history.LastReadAt = DateTime.UtcNow;
-            }
-            await _db.SaveChangesAsync();
         }
-        // Người chưa đăng nhập: không lưu lịch sử
-        // ----------------------------------------------------------
 
         ViewBag.PrevChapter = prevChapter;
         ViewBag.NextChapter = nextChapter;
         ViewBag.AllChapters = allChapters;
 
         return View(chapter);
+    }
+
+    // ── POST /Story/UnlockChapter ──────────────────────────────
+    [HttpPost]
+    public async Task<IActionResult> UnlockChapter(int chapterId)
+    {
+        var userId = HttpContext.Session.GetInt32("UserId");
+        if (!userId.HasValue)
+        {
+            return Json(new { success = false, message = "Vui lòng đăng nhập để mở khóa chương!" });
+        }
+
+        var user = await _db.Users.FindAsync(userId.Value);
+        var chapter = await _db.Chapters.Include(c => c.Story).FirstOrDefaultAsync(c => c.Id == chapterId);
+        if (user == null || chapter == null)
+        {
+            return Json(new { success = false, message = "Dữ liệu không hợp lệ!" });
+        }
+
+        // Kiểm tra xem đã mở khóa chưa hoặc có đặc quyền không
+        var role = HttpContext.Session.GetString("Role");
+        var isAdmin = role == "Admin";
+        var isAuthor = chapter.Story.AuthorId == user.Id;
+        var alreadyUnlocked = await _db.UserUnlockedChapters.AnyAsync(uc => uc.UserId == user.Id && uc.ChapterId == chapter.Id);
+
+        if (alreadyUnlocked || chapter.Price <= 0 || isAdmin || isAuthor)
+        {
+            return Json(new { success = true, message = "Chương đã được mở khóa hoặc bạn có quyền đọc miễn phí!" });
+        }
+
+        if (user.Balance < chapter.Price)
+        {
+            return Json(new { success = false, message = $"Số dư xu không đủ! Phí chương là {chapter.Price} Xu, số dư hiện tại của bạn là {user.Balance} Xu. Vui lòng nạp thêm." });
+        }
+
+        // Trừ xu và ghi nhận mở khóa
+        user.Balance -= chapter.Price;
+
+        var unlockRecord = new UserUnlockedChapter
+        {
+            UserId = user.Id,
+            ChapterId = chapter.Id,
+            UnlockedAt = DateTime.Now
+        };
+        _db.UserUnlockedChapters.Add(unlockRecord);
+        await _db.SaveChangesAsync();
+
+        // Cập nhật số dư trong session
+        HttpContext.Session.SetInt32("UserBalance", user.Balance);
+
+        return Json(new { success = true, message = "Mở khóa chương thành công!", newBalance = user.Balance });
     }
 
     // ── POST /Story/PostComment ──────────────────────────────

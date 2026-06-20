@@ -56,6 +56,7 @@ public class AccountController : Controller
         HttpContext.Session.SetInt32("UserId", user.Id);
         HttpContext.Session.SetString("UserName", user.UserName);
         HttpContext.Session.SetString("Role", user.Role);
+        HttpContext.Session.SetInt32("UserBalance", user.Balance);
 
         return RedirectToAction("Index", "Story");
     }
@@ -119,6 +120,7 @@ public class AccountController : Controller
         HttpContext.Session.SetInt32("UserId", user.Id);
         HttpContext.Session.SetString("UserName", user.UserName);
         HttpContext.Session.SetString("Role", user.Role);
+        HttpContext.Session.SetInt32("UserBalance", user.Balance);
 
         if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
         {
@@ -179,6 +181,7 @@ public class AccountController : Controller
         HttpContext.Session.SetInt32("UserId", user.Id);
         HttpContext.Session.SetString("UserName", user.UserName);
         HttpContext.Session.SetString("Role", user.Role);
+        HttpContext.Session.SetInt32("UserBalance", user.Balance);
 
         return RedirectToAction("Index", "Story");
     }
@@ -208,6 +211,9 @@ public class AccountController : Controller
         {
             return RedirectToAction("Login");
         }
+
+        // Cập nhật session balance mới nhất khi vào Profile
+        HttpContext.Session.SetInt32("UserBalance", user.Balance);
 
         return View(user);
     }
@@ -376,5 +382,183 @@ public class AccountController : Controller
         }
 
         return userName;
+    }
+
+    // ── GET /Account/Recharge ────────────────────────────────
+    public async Task<IActionResult> Recharge(string? returnUrl)
+    {
+        var userId = HttpContext.Session.GetInt32("UserId");
+        if (userId == null) return RedirectToAction("Login");
+
+        var user = await _db.Users.FindAsync(userId.Value);
+        if (user == null) return RedirectToAction("Login");
+
+        ViewBag.ReturnUrl = returnUrl;
+        return View(user);
+    }
+
+    // ── POST /Account/ProcessRecharge ─────────────────────────
+    [HttpPost]
+    public async Task<IActionResult> ProcessRecharge(int amount, string paymentMethod, string? returnUrl)
+    {
+        var userId = HttpContext.Session.GetInt32("UserId");
+        if (userId == null) return RedirectToAction("Login");
+
+        var user = await _db.Users.FindAsync(userId.Value);
+        if (user == null) return RedirectToAction("Login");
+
+        // Quy đổi VND sang Xu (ví dụ: 10,000đ = 100 xu, 20,000đ = 250 xu, 50,000đ = 650 xu, 100,000đ = 1400 xu, 200,000đ = 3000 xu)
+        int coinsToAdd = amount switch
+        {
+            10000 => 100,
+            20000 => 250,
+            50000 => 650,
+            100000 => 1400,
+            200000 => 3000,
+            _ => amount / 100 // Tỷ lệ mặc định 100đ = 1 xu
+        };
+
+        user.Balance += coinsToAdd;
+        await _db.SaveChangesAsync();
+
+        HttpContext.Session.SetInt32("UserBalance", user.Balance);
+        TempData["Success"] = $"Nạp thành công {coinsToAdd} Xu vào tài khoản!";
+
+        if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+        {
+            return Redirect(returnUrl);
+        }
+
+        return RedirectToAction("Profile");
+    }
+
+    // ── GET /Account/LinkBank ─────────────────────────────────
+    public async Task<IActionResult> LinkBank()
+    {
+        var userId = HttpContext.Session.GetInt32("UserId");
+        if (userId == null) return RedirectToAction("Login");
+
+        var user = await _db.Users.FindAsync(userId.Value);
+        if (user == null) return RedirectToAction("Login");
+
+        if (user.IsBankLinked)
+        {
+            TempData["Error"] = "Tài khoản của bạn đã được liên kết ngân hàng!";
+            return RedirectToAction("Profile");
+        }
+
+        return View();
+    }
+
+    // ── POST /Account/LinkBank ────────────────────────────────
+    [HttpPost]
+    public IActionResult LinkBank(string bankName, string accountNumber, string phone)
+    {
+        var userId = HttpContext.Session.GetInt32("UserId");
+        if (userId == null) return RedirectToAction("Login");
+
+        if (string.IsNullOrWhiteSpace(bankName) || string.IsNullOrWhiteSpace(accountNumber) || string.IsNullOrWhiteSpace(phone))
+        {
+            ViewBag.Error = "Vui lòng điền đầy đủ thông tin liên kết ngân hàng.";
+            return View();
+        }
+
+        // Lưu tạm vào TempData để chuyển tiếp qua bước nhập OTP
+        TempData["PendingBankName"] = bankName;
+        TempData["PendingAccountNumber"] = accountNumber;
+        TempData["PendingPhone"] = phone;
+
+        // Mã OTP mô phỏng
+        TempData["SimulatedOTP"] = "123456";
+
+        return RedirectToAction("ConfirmLinkBankOTP");
+    }
+
+    // ── GET /Account/ConfirmLinkBankOTP ───────────────────────
+    public IActionResult ConfirmLinkBankOTP()
+    {
+        var userId = HttpContext.Session.GetInt32("UserId");
+        if (userId == null) return RedirectToAction("Login");
+
+        if (TempData["PendingBankName"] == null)
+        {
+            return RedirectToAction("LinkBank");
+        }
+
+        // Giữ lại TempData cho request tiếp theo
+        TempData.Keep("PendingBankName");
+        TempData.Keep("PendingAccountNumber");
+        TempData.Keep("PendingPhone");
+        TempData.Keep("SimulatedOTP");
+
+        return View();
+    }
+
+    // ── POST /Account/ConfirmLinkBankOTP ──────────────────────
+    [HttpPost]
+    public async Task<IActionResult> ConfirmLinkBankOTP(string otpCode)
+    {
+        var userId = HttpContext.Session.GetInt32("UserId");
+        if (userId == null) return RedirectToAction("Login");
+
+        var bankName = TempData["PendingBankName"] as string;
+        var accountNumber = TempData["PendingAccountNumber"] as string;
+        var phone = TempData["PendingPhone"] as string;
+        var simulatedOTP = TempData["SimulatedOTP"] as string;
+
+        if (string.IsNullOrEmpty(bankName) || string.IsNullOrEmpty(accountNumber))
+        {
+            TempData["Error"] = "Phiên liên kết ngân hàng đã hết hạn.";
+            return RedirectToAction("LinkBank");
+        }
+
+        if (otpCode != simulatedOTP && otpCode != "123456")
+        {
+            ViewBag.Error = "Mã xác thực OTP không đúng. Vui lòng nhập lại (Mã OTP mẫu: 123456).";
+            
+            TempData.Keep("PendingBankName");
+            TempData.Keep("PendingAccountNumber");
+            TempData.Keep("PendingPhone");
+            TempData.Keep("SimulatedOTP");
+            
+            return View();
+        }
+
+        var user = await _db.Users.FindAsync(userId.Value);
+        if (user != null)
+        {
+            user.IsBankLinked = true;
+            user.LinkedBankName = bankName;
+            
+            // Che bớt số tài khoản để bảo mật
+            var visibleLen = Math.Min(4, accountNumber.Length);
+            var maskedNumber = accountNumber.Substring(0, visibleLen) + new string('*', Math.Max(0, accountNumber.Length - visibleLen));
+            user.LinkedAccountNumber = maskedNumber;
+
+            await _db.SaveChangesAsync();
+            TempData["Success"] = $"Liên kết thành công tài khoản ngân hàng {bankName}!";
+        }
+
+        return RedirectToAction("Profile");
+    }
+
+    // ── POST /Account/UnlinkBank ──────────────────────────────
+    [HttpPost]
+    public async Task<IActionResult> UnlinkBank()
+    {
+        var userId = HttpContext.Session.GetInt32("UserId");
+        if (userId == null) return RedirectToAction("Login");
+
+        var user = await _db.Users.FindAsync(userId.Value);
+        if (user != null)
+        {
+            user.IsBankLinked = false;
+            user.LinkedBankName = null;
+            user.LinkedAccountNumber = null;
+            await _db.SaveChangesAsync();
+            TempData["Success"] = "Đã hủy liên kết tài khoản ngân hàng thành công!";
+        }
+
+        return RedirectToAction("Profile");
     }
 }

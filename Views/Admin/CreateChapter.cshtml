@@ -36,12 +36,18 @@
                 <input type="hidden" name="StoryId" value="@Model.StoryId" />
                 
                 <div class="row">
-                    <div class="col-md-3 mb-3">
+                    <div class="col-md-2 mb-3">
                         <label asp-for="ChapterNumber" class="form-label fw-bold">Chương số *</label>
                         <input asp-for="ChapterNumber" class="form-control" type="number" min="1" required />
                         <span asp-validation-for="ChapterNumber" class="text-danger small"></span>
                     </div>
-                    <div class="col-md-9 mb-3">
+                    <div class="col-md-2 mb-3">
+                        <label asp-for="Price" class="form-label fw-bold">Giá bán (Xu)</label>
+                        <input asp-for="Price" class="form-control" type="number" min="0" required />
+                        <span asp-validation-for="Price" class="text-danger small"></span>
+                        <div class="text-muted small" style="font-size: 0.72rem; margin-top: 2px;">0 = Miễn phí</div>
+                    </div>
+                    <div class="col-md-8 mb-3">
                         <label asp-for="Title" class="form-label fw-bold">Tiêu đề chương *</label>
                         <input asp-for="Title" class="form-control" placeholder="Ví dụ: Kẻ Xuyên Không" required maxlength="200" />
                         <span asp-validation-for="Title" class="text-danger small"></span>

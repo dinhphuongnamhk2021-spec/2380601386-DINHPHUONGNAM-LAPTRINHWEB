@@ -17,6 +17,8 @@ public class Chapter
 
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 
+    public int Price { get; set; } = 0;
+
     // FK
     public int   StoryId { get; set; }
     public Story Story   { get; set; } = null!;

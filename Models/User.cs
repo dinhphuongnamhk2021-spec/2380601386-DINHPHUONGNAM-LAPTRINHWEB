@@ -24,6 +24,16 @@ public class User
 
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 
+    public int Balance { get; set; } = 100;
+
+    public bool IsBankLinked { get; set; } = false;
+
+    [StringLength(50)]
+    public string? LinkedBankName { get; set; }
+
+    [StringLength(50)]
+    public string? LinkedAccountNumber { get; set; }
+
     // Navigation properties
     public ICollection<Story> Stories { get; set; } = new List<Story>();
     public ICollection<UserStoryFollow> FollowedStories { get; set; } = new List<UserStoryFollow>();

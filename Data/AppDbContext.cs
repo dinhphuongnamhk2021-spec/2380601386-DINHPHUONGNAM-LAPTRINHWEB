@@ -17,6 +17,7 @@ public class AppDbContext : DbContext
     public DbSet<ReadingHistory> ReadingHistories { get; set; }
     public DbSet<UserStoryFollow> UserStoryFollows { get; set; }
     public DbSet<UserFavoriteStory> UserFavoriteStories { get; set; }
+    public DbSet<UserUnlockedChapter> UserUnlockedChapters { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -104,6 +105,23 @@ public class AppDbContext : DbContext
             .HasIndex(uf => new { uf.UserId, uf.StoryId })
             .IsUnique();
 
+        // UserUnlockedChapter configuration
+        modelBuilder.Entity<UserUnlockedChapter>()
+            .HasIndex(uc => new { uc.UserId, uc.ChapterId })
+            .IsUnique();
+
+        modelBuilder.Entity<UserUnlockedChapter>()
+            .HasOne(uc => uc.User)
+            .WithMany()
+            .HasForeignKey(uc => uc.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<UserUnlockedChapter>()
+            .HasOne(uc => uc.Chapter)
+            .WithMany()
+            .HasForeignKey(uc => uc.ChapterId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         // Seed dữ liệu thể loại mặc định
         modelBuilder.Entity<Genre>().HasData(
             new Genre { Id = 1, Name = "Tiên Hiệp",   Slug = "tien-hiep"   },
@@ -127,6 +145,7 @@ public class AppDbContext : DbContext
                 Email = "admin@doctruyen.com",
                 PasswordHash = "jGl25bVBBBW96Qi9Te4V37Fnqchz/Eu4qB9vKrRIqRg=", // hash of "admin"
                 Role = "Admin",
+                Balance = 500,
                 CreatedAt = DateTime.Now.AddDays(-30)
             },
             new User { 
@@ -135,6 +154,7 @@ public class AppDbContext : DbContext
                 Email = "user@doctruyen.com",
                 PasswordHash = "BPiZbadjt6lpsQKO4wB1aerzpjVIbdqyEdUSyFud+Ps=", // hash of "user"
                 Role = "User",
+                Balance = 100,
                 CreatedAt = DateTime.Now.AddDays(-20)
             }
         );
@@ -265,6 +285,7 @@ public class AppDbContext : DbContext
                 Title = "Lão nhân bí ẩn", 
                 Content = "Đêm đó, khi Tiêu Viêm đang ngủ say, một luồng ánh sáng kỳ lạ đột nhiên xuất hiện trong phòng hắn. Một lão nhân với mái tóc bạc phơ bước ra từ trong ánh sáng.<br><br>\"Tiểu tử, ngươi có muốn thay đổi số phận của mình không?\" Lão nhân nhìn Tiêu Viêm, trong mắt chứa đựng một vẻ thâm sâu khó lường.<br><br>Tiêu Viêm giật mình tỉnh giấc, nhìn lão nhân trước mặt, trong lòng tràn ngập kinh ngạc.",
                 StoryId = 1,
+                Price = 20,
                 CreatedAt = DateTime.Now.AddDays(-29)
             },
             new Chapter { 
@@ -281,6 +302,7 @@ public class AppDbContext : DbContext
                 Title = "Thử thách", 
                 Content = "Ba ngày sau, Lâm gia tổ chức một buổi thử thách cho các thiếu niên trong gia tộc. Đây là cơ hội để Lâm Động chứng minh thực lực của mình.<br><br>Trên võ đài, Lâm Động đối mặt với đối thủ mạnh nhất của mình - Lâm Lăng. Hai người nhìn nhau, không khí xung quanh trở nên căng thẳng.<br><br>\"Đến đi, để ta xem thực lực của ngươi đến đâu!\" Lâm Lăng gầm lên, toàn thân tỏa ra khí thế mạnh mẽ.",
                 StoryId = 2,
+                Price = 30,
                 CreatedAt = DateTime.Now.AddDays(-24)
             },
             new Chapter { 

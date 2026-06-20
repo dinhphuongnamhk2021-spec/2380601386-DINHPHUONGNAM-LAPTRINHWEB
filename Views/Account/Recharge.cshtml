@@ -1,0 +1,530 @@
+@model DOANLAPTRINHWWEB.Models.User
+@{
+    ViewData["Title"] = "Nạp Xu - DocTruyen";
+    var returnUrl = ViewBag.ReturnUrl as string;
+}
+
+<style>
+    :root {
+        --ink: #1a1a2e;
+        --ink2: #16213e;
+        --gold: #e8a045;
+        --gold-soft: #f5c878;
+        --muted: #6b7280;
+        --card-bg: #ffffff;
+        --border: #e5e7eb;
+        --glass-bg: rgba(255, 255, 255, 0.08);
+        --glass-border: rgba(255, 255, 255, 0.12);
+    }
+
+    .recharge-hero {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        padding: 50px 0;
+        color: #fff;
+        position: relative;
+        overflow: hidden;
+    }
+    .recharge-hero::before {
+        content: '';
+        position: absolute; inset: 0;
+        background: radial-gradient(ellipse 80% 60% at 60% 50%, rgba(232,160,69,.12) 0%, transparent 70%);
+        pointer-events: none;
+    }
+
+    .glass-card {
+        background: rgba(255, 255, 255, 0.07);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 16px;
+        padding: 24px;
+        color: #fff;
+    }
+
+    .package-card {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 24px;
+        text-align: center;
+        position: relative;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        cursor: pointer;
+        overflow: hidden;
+    }
+    .package-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+        border-color: var(--gold);
+    }
+    .package-card.active {
+        border-color: var(--gold);
+        background: rgba(232, 160, 69, 0.03);
+        box-shadow: 0 8px 24px rgba(232, 160, 69, 0.15);
+    }
+    .package-card.active::before {
+        content: '\F633'; /* Bootstrap Check-circle Icon */
+        font-family: "bootstrap-icons";
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        color: var(--gold);
+        font-size: 1.2rem;
+        font-weight: bold;
+    }
+
+    .badge-promo {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translate(-50%, 0);
+        background: linear-gradient(135deg, #ef4444, #b91c1c);
+        color: #fff;
+        padding: 4px 16px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        border-bottom-left-radius: 8px;
+        border-bottom-right-radius: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .coins-value {
+        font-family: 'Playfair Display', serif;
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: var(--ink);
+        margin: 12px 0 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+    .package-card:hover .coins-value, .package-card.active .coins-value {
+        color: var(--gold);
+    }
+
+    .payment-method-option {
+        border: 2px solid var(--border);
+        border-radius: 12px;
+        padding: 16px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        cursor: pointer;
+        transition: all 0.2s;
+        background: #fff;
+        margin-bottom: 12px;
+    }
+    .payment-method-option:hover {
+        border-color: var(--gold-soft);
+        background: rgba(232, 160, 69, 0.01);
+    }
+    .payment-method-option.active {
+        border-color: var(--gold);
+        background: rgba(232, 160, 69, 0.04);
+    }
+
+    .method-icon {
+        width: 45px;
+        height: 45px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: #fff;
+    }
+    .bg-momo { background: #ae2070; }
+    .bg-bank { background: #3b82f6; }
+    .bg-linked { background: linear-gradient(135deg, #10b981, #047857); }
+
+    .btn-recharge-submit {
+        background: linear-gradient(135deg, var(--gold) 0%, var(--gold-soft) 100%);
+        color: #1a1a2e;
+        font-weight: 700;
+        border: none;
+        padding: 16px;
+        font-size: 1.1rem;
+        border-radius: 12px;
+        width: 100%;
+        box-shadow: 0 8px 24px rgba(232, 160, 69, 0.35);
+        transition: all 0.2s;
+    }
+    .btn-recharge-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 30px rgba(232, 160, 69, 0.5);
+        background: var(--gold-soft);
+        color: #1a1a2e;
+    }
+    .btn-recharge-submit:active {
+        transform: translateY(0);
+    }
+</style>
+
+<div class="recharge-hero mb-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-7 mb-4 mb-md-0">
+                <h1 style="font-family: 'Playfair Display', serif; font-size: 2.8rem; font-weight: 700;">Nạp Xu Đọc Truyện</h1>
+                <p class="lead opacity-75">Mở khóa vĩnh viễn các chương VIP chất lượng cao, ủng hộ các tác giả sáng tác truyện.</p>
+                <div class="d-flex align-items-center gap-3 mt-4">
+                    <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill"><i class="bi bi-shield-check me-1"></i> An toàn 100%</span>
+                    <span class="badge bg-info-subtle text-info border border-info-subtle px-3 py-2 rounded-pill"><i class="bi bi-lightning-charge me-1"></i> Xử lý tức thì</span>
+                </div>
+            </div>
+            <div class="col-md-5">
+                <div class="glass-card">
+                    <div class="text-white-50 small text-uppercase fw-semibold tracking-wider mb-1">Tài khoản ví của bạn</div>
+                    <h3 class="fw-bold mb-3">@Model.UserName</h3>
+                    <div class="d-flex justify-content-between align-items-center bg-white bg-opacity-10 p-3 rounded-3 border border-white border-opacity-10">
+                        <span class="text-white-50"><i class="bi bi-coin me-1"></i> Số dư Xu hiện tại:</span>
+                        <span class="fs-4 fw-bold text-warning">@Model.Balance Xu</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <div class="row">
+        <!-- Step 1: Chọn gói nạp -->
+        <div class="col-lg-8 mb-4">
+            <h4 class="mb-4" style="font-family: 'Playfair Display', serif; font-weight: 700; color: var(--ink);">
+                <span class="badge bg-primary me-2" style="background-color: var(--ink) !important;">1</span> Chọn Gói Nạp Xu
+            </h4>
+            
+            <div class="row g-3">
+                <!-- Gói 10k -->
+                <div class="col-md-4 col-sm-6">
+                    <div class="package-card active" data-amount="10000" data-coins="100">
+                        <div class="text-muted small">Cơ bản</div>
+                        <div class="coins-value">
+                            <i class="bi bi-coin text-warning"></i> 100
+                        </div>
+                        <div class="text-muted small mb-3">Xu</div>
+                        <div class="fw-bold text-dark fs-5">10.000đ</div>
+                    </div>
+                </div>
+
+                <!-- Gói 20k -->
+                <div class="col-md-4 col-sm-6">
+                    <div class="package-card" data-amount="20000" data-coins="250">
+                        <span class="badge-promo">Khuyến Mãi +25%</span>
+                        <div class="text-muted small">Phổ biến</div>
+                        <div class="coins-value">
+                            <i class="bi bi-coin text-warning"></i> 250
+                        </div>
+                        <div class="text-muted small mb-3">Xu</div>
+                        <div class="fw-bold text-dark fs-5">20.000đ</div>
+                    </div>
+                </div>
+
+                <!-- Gói 50k -->
+                <div class="col-md-4 col-sm-6">
+                    <div class="package-card" data-amount="50000" data-coins="650">
+                        <span class="badge-promo">Khuyến Mãi +30%</span>
+                        <div class="text-muted small">Khuyên dùng</div>
+                        <div class="coins-value">
+                            <i class="bi bi-coin text-warning"></i> 650
+                        </div>
+                        <div class="text-muted small mb-3">Xu</div>
+                        <div class="fw-bold text-dark fs-5">50.000đ</div>
+                    </div>
+                </div>
+
+                <!-- Gói 100k -->
+                <div class="col-md-4 col-sm-6">
+                    <div class="package-card" data-amount="100000" data-coins="1400">
+                        <span class="badge-promo">Khuyến Mãi +40%</span>
+                        <div class="text-muted small">Best Value</div>
+                        <div class="coins-value">
+                            <i class="bi bi-coin text-warning"></i> 1400
+                        </div>
+                        <div class="text-muted small mb-3">Xu</div>
+                        <div class="fw-bold text-dark fs-5">100.000đ</div>
+                    </div>
+                </div>
+
+                <!-- Gói 200k -->
+                <div class="col-md-4 col-sm-6">
+                    <div class="package-card" data-amount="200000" data-coins="3000">
+                        <span class="badge-promo">Siêu Ưu Đãi +50%</span>
+                        <div class="text-muted small">VIP VIP VIP</div>
+                        <div class="coins-value">
+                            <i class="bi bi-coin text-warning"></i> 3000
+                        </div>
+                        <div class="text-muted small mb-3">Xu</div>
+                        <div class="fw-bold text-dark fs-5">200.000đ</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2: Chọn phương thức & Xác nhận -->
+        <div class="col-lg-4">
+            <h4 class="mb-4" style="font-family: 'Playfair Display', serif; font-weight: 700; color: var(--ink);">
+                <span class="badge bg-primary me-2" style="background-color: var(--ink) !important;">2</span> Phương Thức
+            </h4>
+
+            <div class="payment-methods-list mb-4">
+                <!-- Bank Linking Method (If linked) -->
+                @if (Model.IsBankLinked)
+                {
+                    <div class="payment-method-option active" data-method="linked-bank">
+                        <div class="method-icon bg-linked">
+                            <i class="bi bi-bank"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="fw-bold text-dark" style="font-size: 0.95rem;">Tài khoản ngân hàng liên kết</div>
+                            <div class="text-muted small">@Model.LinkedBankName (@Model.LinkedAccountNumber)</div>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="payMethod" id="methodLinked" value="linked-bank" checked>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="payment-method-option" onclick="location.href='/Account/LinkBank'">
+                        <div class="method-icon bg-secondary">
+                            <i class="bi bi-plus-circle"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="fw-bold text-dark" style="font-size: 0.95rem;">Liên kết tài khoản ngân hàng</div>
+                            <div class="text-muted small">Liên kết để nạp nhanh 1-Click</div>
+                        </div>
+                        <i class="bi bi-chevron-right text-muted"></i>
+                    </div>
+                }
+
+                <!-- Bank Transfer -->
+                <div class="payment-method-option @(!Model.IsBankLinked ? "active" : "")" data-method="bank-transfer">
+                    <div class="method-icon bg-bank">
+                        <i class="bi bi-qr-code-scan"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="fw-bold text-dark" style="font-size: 0.95rem;">Chuyển khoản / Quét mã QR</div>
+                        <div class="text-muted small">Nạp qua VNPAY / App Ngân hàng</div>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="payMethod" id="methodBank" value="bank-transfer" @(!Model.IsBankLinked ? "checked" : "")>
+                    </div>
+                </div>
+
+                <!-- MoMo -->
+                <div class="payment-method-option" data-method="momo">
+                    <div class="method-icon bg-momo">
+                        <i class="bi bi-wallet-fill"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="fw-bold text-dark" style="font-size: 0.95rem;">Ví điện tử MoMo</div>
+                        <div class="text-muted small">Nạp nhanh qua ví MoMo</div>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="payMethod" id="methodMomo" value="momo">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tổng kết hóa đơn -->
+            <div class="border rounded-3 p-4 bg-white shadow-sm mb-4">
+                <h5 class="fw-bold text-dark pb-3 mb-3 border-bottom"><i class="bi bi-receipt me-1"></i> Chi tiết đơn hàng</h5>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Gói nạp:</span>
+                    <span class="fw-bold text-dark" id="invoiceCoins">100 Xu</span>
+                </div>
+                <div class="d-flex justify-content-between mb-3">
+                    <span class="text-muted">Cổng thanh toán:</span>
+                    <span class="text-dark" id="invoiceMethod">@(Model.IsBankLinked ? "Ngân hàng liên kết" : "Chuyển khoản QR")</span>
+                </div>
+                <div class="d-flex justify-content-between pt-3 border-top">
+                    <span class="fw-bold text-dark">Tổng tiền:</span>
+                    <span class="fw-bold text-danger fs-4" id="invoiceAmount">10.000đ</span>
+                </div>
+            </div>
+
+            <button type="button" class="btn-recharge-submit" id="btnSubmitRecharge">
+                XÁC NHẬN THANH TOÁN
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ================= MODAL MÔ PHỎNG THANH TOÁN ================= -->
+<!-- Modal 1: MoMo / Chuyển khoản QR -->
+<div class="modal fade" id="paymentSimModal" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
+            <div class="modal-header text-white" style="background: linear-gradient(135deg, #1a1a2e, #16213e); border-bottom: none; padding: 20px;">
+                <h5 class="modal-title fw-bold" id="simModalTitle">Mô Phỏng Thanh Toán</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center p-4">
+                <p class="text-muted mb-4">Quét mã QR dưới đây bằng điện thoại của bạn hoặc bấm nút mô phỏng nạp thành công.</p>
+                
+                <!-- QR Code container -->
+                <div class="qr-container p-3 border rounded-3 bg-light inline-block mb-4" style="max-width: 250px; margin: 0 auto;">
+                    <img id="simQR" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=DemoRecharge" alt="QR Code" class="img-fluid" />
+                </div>
+                
+                <h4 class="fw-bold text-danger mb-1" id="simModalAmount">10.000đ</h4>
+                <p class="text-muted small mb-4">Nội dung chuyển khoản: <strong class="text-dark">NAP XU @Model.UserName</strong></p>
+
+                <!-- Form gửi thực tế -->
+                <form id="rechargeForm" method="post" asp-action="ProcessRecharge">
+                    <input type="hidden" name="amount" id="formAmount" value="10000" />
+                    <input type="hidden" name="paymentMethod" id="formMethod" value="bank-transfer" />
+                    <input type="hidden" name="returnUrl" value="@returnUrl" />
+
+                    <button type="submit" class="btn btn-success px-4 py-3 fw-bold rounded-pill w-100 shadow-sm">
+                        <i class="bi bi-check-circle-fill me-1"></i> XÁC NHẬN ĐÃ CHUYỂN KHOẢN (THÀNH CÔNG)
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal 2: Thanh toán bằng Tài khoản Ngân hàng liên kết -->
+<div class="modal fade" id="linkedPaymentModal" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
+            <div class="modal-header text-white" style="background: linear-gradient(135deg, #10b981, #047857); border-bottom: none; padding: 20px;">
+                <h5 class="modal-title fw-bold"><i class="bi bi-shield-lock me-1"></i> Xác Nhận Thanh Toán 1-Click</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center p-4">
+                <div class="mb-4">
+                    <div class="avatar bg-success bg-opacity-10 text-success rounded-circle d-flex align-items-center justify-content-center mx-auto" style="width: 70px; height: 70px;">
+                        <i class="bi bi-bank fs-2"></i>
+                    </div>
+                </div>
+                <p class="mb-3 text-dark">Bạn đang thực hiện nạp tiền từ tài khoản ngân hàng liên kết:</p>
+                <div class="bg-light p-3 rounded-3 mb-4 border text-start">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Ngân hàng:</span>
+                        <strong class="text-dark">@Model.LinkedBankName</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Số tài khoản:</span>
+                        <strong class="text-dark">@Model.LinkedAccountNumber</strong>
+                    </div>
+                    <div class="d-flex justify-content-between border-top pt-2">
+                        <span class="text-muted fw-bold">Tổng thanh toán:</span>
+                        <strong class="text-danger fs-5" id="linkedPayAmount">10.000đ</strong>
+                    </div>
+                </div>
+
+                <form method="post" asp-action="ProcessRecharge">
+                    <input type="hidden" name="amount" id="formAmountLinked" value="10000" />
+                    <input type="hidden" name="paymentMethod" value="linked-bank" />
+                    <input type="hidden" name="returnUrl" value="@returnUrl" />
+
+                    <button type="submit" class="btn btn-success px-4 py-3 fw-bold rounded-pill w-100 shadow-sm" style="background-color: #10b981; border: none;">
+                        <i class="bi bi-wallet2 me-1"></i> XÁC NHẬN NẠP NGAY (1-CLICK PAY)
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const packageCards = document.querySelectorAll(".package-card");
+        const methodOptions = document.querySelectorAll(".payment-method-option");
+        
+        let selectedAmount = 10000;
+        let selectedCoins = 100;
+        let selectedMethod = "@(Model.IsBankLinked ? "linked-bank" : "bank-transfer")";
+
+        // Click chọn gói nạp
+        packageCards.forEach(card => {
+            card.addEventListener("click", function () {
+                packageCards.forEach(c => c.classList.remove("active"));
+                this.classList.add("active");
+                
+                selectedAmount = parseInt(this.getAttribute("data-amount"));
+                selectedCoins = parseInt(this.getAttribute("data-coins"));
+
+                updateInvoice();
+            });
+        });
+
+        // Click chọn phương thức thanh toán
+        methodOptions.forEach(opt => {
+            opt.addEventListener("click", function () {
+                // Skip click if clicking the bank link placeholder which is not select-option
+                if (!this.getAttribute("data-method")) return;
+
+                methodOptions.forEach(o => o.classList.remove("active"));
+                this.classList.add("active");
+
+                const radio = this.querySelector("input[type='radio']");
+                if (radio) radio.checked = true;
+
+                selectedMethod = this.getAttribute("data-method");
+
+                updateInvoice();
+            });
+        });
+
+        function updateInvoice() {
+            // Định dạng tiền tệ
+            const formatter = new Intl.NumberFormat('vi-VN', {
+                style: 'currency',
+                currency: 'VND'
+            });
+
+            document.getElementById("invoiceCoins").innerText = selectedCoins + " Xu";
+            document.getElementById("invoiceAmount").innerText = formatter.format(selectedAmount);
+
+            let methodText = "";
+            if (selectedMethod === "linked-bank") methodText = "Ngân hàng liên kết";
+            else if (selectedMethod === "bank-transfer") methodText = "Chuyển khoản QR";
+            else if (selectedMethod === "momo") methodText = "Ví MoMo";
+            document.getElementById("invoiceMethod").innerText = methodText;
+
+            // Cập nhật cho forms
+            document.getElementById("formAmount").value = selectedAmount;
+            document.getElementById("formMethod").value = selectedMethod;
+            document.getElementById("formAmountLinked").value = selectedAmount;
+        }
+
+        // Bấm nút Submit thanh toán
+        document.getElementById("btnSubmitRecharge").addEventListener("click", function() {
+            const formatter = new Intl.NumberFormat('vi-VN', {
+                style: 'currency',
+                currency: 'VND'
+            });
+
+            if (selectedMethod === "linked-bank") {
+                // Show linked pay modal
+                document.getElementById("linkedPayAmount").innerText = formatter.format(selectedAmount);
+                const linkedModal = new bootstrap.Modal(document.getElementById("linkedPaymentModal"));
+                linkedModal.show();
+            } else {
+                // Show QR code mock modal
+                document.getElementById("simModalAmount").innerText = formatter.format(selectedAmount);
+                
+                let qrData = "";
+                let titleText = "";
+                if (selectedMethod === "momo") {
+                    titleText = "Thanh Toán Ví MoMo";
+                    qrData = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=MomoPay_Amount_${selectedAmount}_User_${encodeURIComponent("@Model.UserName")}`;
+                } else {
+                    titleText = "Thanh Toán Chuyển Khoản QR";
+                    qrData = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=BankTransfer_Amount_${selectedAmount}_User_${encodeURIComponent("@Model.UserName")}`;
+                }
+                
+                document.getElementById("simModalTitle").innerText = titleText;
+                document.getElementById("simQR").src = qrData;
+
+                const qrModal = new bootstrap.Modal(document.getElementById("paymentSimModal"));
+                qrModal.show();
+            }
+        });
+    });
+</script>

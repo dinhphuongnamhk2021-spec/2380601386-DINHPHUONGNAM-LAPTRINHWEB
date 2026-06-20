@@ -314,6 +314,7 @@ public class AdminController : Controller
             existingChapter.Title = chapter.Title;
             existingChapter.ChapterNumber = chapter.ChapterNumber;
             existingChapter.Content = chapter.Content;
+            existingChapter.Price = chapter.Price;
 
             await _db.SaveChangesAsync();
             return RedirectToAction("Chapters", new { id = chapter.StoryId });
@@ -417,6 +418,42 @@ public class AdminController : Controller
         await _db.SaveChangesAsync();
 
         TempData["Success"] = $"Đã xóa người dùng '{user.UserName}' thành công.";
+        return RedirectToAction("Users");
+    }
+
+    // ── POST /Admin/UpdateUserBalance ────────────────────────
+    [HttpPost]
+    public async Task<IActionResult> UpdateUserBalance(int userId, int balance)
+    {
+        var currentRole = HttpContext.Session.GetString("Role");
+        if (currentRole != "Admin")
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
+        var user = await _db.Users.FindAsync(userId);
+        if (user == null)
+        {
+            TempData["Error"] = "Không tìm thấy người dùng.";
+            return RedirectToAction("Users");
+        }
+
+        if (balance < 0)
+        {
+            TempData["Error"] = "Số dư không thể là số âm.";
+            return RedirectToAction("Users");
+        }
+
+        user.Balance = balance;
+        await _db.SaveChangesAsync();
+
+        var currentUserId = HttpContext.Session.GetInt32("UserId");
+        if (currentUserId == userId)
+        {
+            HttpContext.Session.SetInt32("UserBalance", user.Balance);
+        }
+
+        TempData["Success"] = $"Cập nhật số dư cho người dùng '{user.UserName}' thành công. Số dư mới: {balance} Xu.";
         return RedirectToAction("Users");
     }
 }

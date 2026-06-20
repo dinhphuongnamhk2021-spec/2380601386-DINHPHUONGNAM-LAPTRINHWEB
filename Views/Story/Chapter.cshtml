@@ -250,13 +250,60 @@
         <div class="col-lg-8">
             @* Chapter Content *@
             <div class="chapter-content" id="chapterContent">
-                @if (!string.IsNullOrEmpty(Model.Content))
+                @if (ViewBag.IsLocked == true)
                 {
-                    @Html.Raw(Model.Content.Replace("\n", "<br/>"))
+                    <div class="vip-lock-container text-center py-5">
+                        <div class="lock-icon-wrapper mb-4">
+                            <i class="bi bi-lock-fill text-warning" style="font-size: 4.5rem; filter: drop-shadow(0 0 15px rgba(232, 160, 69, 0.4)); animate: pulse 2s infinite;"></i>
+                        </div>
+                        <h3 class="vip-title mb-3" style="font-family: 'Playfair Display', serif; font-weight: 700; color: #1a1a2e;">Chương Này Là Chương VIP</h3>
+                        <p class="vip-desc text-muted mb-4" style="max-width: 500px; margin: 0 auto; line-height: 1.6;">
+                            Nội dung chương này đã được tác giả giới hạn quyền truy cập. Bạn cần mở khóa để tiếp tục theo dõi diễn biến tiếp theo của câu chuyện.
+                        </p>
+                        
+                        <div class="vip-pricing-card p-4 mb-4 border rounded-3 bg-light shadow-sm" style="max-width: 400px; margin: 0 auto; border-top: 4px solid var(--gold) !important;">
+                            <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+                                <span class="text-muted"><i class="bi bi-coin me-1"></i> Giá mở khóa:</span>
+                                <span class="fw-bold text-dark fs-5">@ViewBag.ChapterPrice Xu</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="text-muted"><i class="bi bi-wallet2 me-1"></i> Số dư hiện tại:</span>
+                                <span class="fw-semibold @(ViewBag.UserBalance >= ViewBag.ChapterPrice ? "text-success" : "text-danger")">
+                                    @ViewBag.UserBalance Xu
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="vip-actions d-flex flex-column align-items-center gap-3">
+                            @if (ViewBag.UserBalance >= ViewBag.ChapterPrice)
+                            {
+                                <button onclick="unlockChapter(@Model.Id)" class="btn btn-warning px-5 py-3 fw-bold rounded-pill text-dark shadow-sm hover-grow" style="background: linear-gradient(135deg, var(--gold), var(--gold-soft)); border: none; font-size: 1.05rem; transition: transform 0.2s;">
+                                    <i class="bi bi-unlock-fill me-2"></i> MỞ KHÓA CHƯƠNG (@ViewBag.ChapterPrice Xu)
+                                </button>
+                            }
+                            else
+                            {
+                                <div class="text-danger small mb-2"><i class="bi bi-exclamation-triangle-fill me-1"></i> Số dư tài khoản không đủ để mở khóa chương này!</div>
+                                <a href="/Account/Recharge?returnUrl=@(Context.Request.Path + Context.Request.QueryString)" class="btn btn-warning px-5 py-3 fw-bold rounded-pill text-dark shadow-sm hover-grow" style="background: linear-gradient(135deg, var(--gold), var(--gold-soft)); border: none; font-size: 1.05rem; transition: transform 0.2s;">
+                                    <i class="bi bi-wallet2 me-2"></i> NẠP THÊM XU
+                                </a>
+                            }
+                            <a href="/Story/Detail/@Model.Story.Id" class="btn btn-link text-decoration-none text-muted">
+                                <i class="bi bi-arrow-left me-1"></i> Quay lại trang chi tiết truyện
+                            </a>
+                        </div>
+                    </div>
                 }
                 else
                 {
-                    <p class="text-center text-muted">Nội dung đang được cập nhật...</p>
+                    @if (!string.IsNullOrEmpty(Model.Content))
+                    {
+                        @Html.Raw(Model.Content.Replace("\n", "<br/>"))
+                    }
+                    else
+                    {
+                        <p class="text-center text-muted">Nội dung đang được cập nhật...</p>
+                    }
                 }
             </div>
 
@@ -398,6 +445,22 @@
                 s.style.color = '#374151';
             });
             event.target.classList.remove('active');
+        }
+    function unlockChapter(chapterId) {
+        if (confirm("Bạn có chắc chắn muốn sử dụng " + @ViewBag.ChapterPrice + " Xu để mở khóa chương này?")) {
+            $.post('/Story/UnlockChapter', { chapterId: chapterId }, function(response) {
+                if (response.success) {
+                    alert(response.message);
+                    window.location.reload();
+                } else {
+                    alert(response.message);
+                    if (response.message.indexOf("Số dư xu không đủ") > -1) {
+                        window.location.href = "/Account/Recharge?returnUrl=" + encodeURIComponent(window.location.pathname + window.location.search);
+                    }
+                }
+            }).fail(function() {
+                alert("Có lỗi kết nối hệ thống. Vui lòng thử lại!");
+            });
         }
     }
 

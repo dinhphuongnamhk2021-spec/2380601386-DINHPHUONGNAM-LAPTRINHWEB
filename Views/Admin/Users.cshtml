@@ -116,7 +116,8 @@
                             <th>Vai trò</th>
                             <th>Ngày tham gia</th>
                             <th style="width: 150px; text-align: center;">Số truyện đã đăng</th>
-                            <th style="width: 280px; text-align: center;">Thao tác</th>
+                            <th style="width: 130px; text-align: center;">Số dư (Xu)</th>
+                            <th style="width: 320px; text-align: center;">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -138,12 +139,16 @@
                                 </td>
                                 <td class="text-muted">@user.CreatedAt.ToString("dd/MM/yyyy")</td>
                                 <td style="text-align: center;" class="fw-semibold">@user.Stories.Count</td>
+                                <td style="text-align: center;" class="fw-bold text-warning">@user.Balance Xu</td>
                                 <td style="text-align: center;">
                                     @if (user.Id == currentUserId)
                                     {
-                                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill px-3 py-1">Đang đăng nhập</span>
+                                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill px-3 py-1 me-1">Đang đăng nhập</span>
                                     }
-                                    else
+                                    <button type="button" class="btn btn-sm btn-outline-warning rounded-pill px-3 py-1 me-1" onclick="openBalanceModal(@user.Id, '@user.UserName', @user.Balance)">
+                                        <i class="bi bi-coin"></i> Số dư
+                                    </button>
+                                    @if (user.Id != currentUserId)
                                     {
                                         @if (user.Role != "Admin")
                                         {
@@ -168,6 +173,36 @@
                         }
                     </tbody>
                 </table>
+            </div>
+            
+            <!-- Modal cập nhật số dư -->
+            <div class="modal fade" id="balanceModal" tabindex="-1" aria-labelledby="balanceModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg" style="border-radius: 14px;">
+                        <div class="modal-header bg-warning text-dark" style="border-top-left-radius: 14px; border-top-right-radius: 14px; border-bottom: none;">
+                            <h5 class="modal-title fw-bold" id="balanceModalLabel"><i class="bi bi-coin me-1"></i> Điều Chỉnh Số Dư Xu</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form asp-action="UpdateUserBalance" method="post">
+                            <div class="modal-body p-4">
+                                <input type="hidden" name="userId" id="modalUserId" />
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold text-dark">Người dùng:</label>
+                                    <input type="text" id="modalUserName" class="form-control bg-light" readonly />
+                                </div>
+                                <div class="mb-3">
+                                    <label for="modalBalanceInput" class="form-label fw-bold text-dark">Số dư Xu mới *</label>
+                                    <input type="number" name="balance" id="modalBalanceInput" class="form-control" min="0" required />
+                                    <span class="text-muted small d-block mt-1">Nhập số xu lớn hơn hoặc bằng 0.</span>
+                                </div>
+                            </div>
+                            <div class="modal-footer border-0 p-3 bg-light" style="border-bottom-left-radius: 14px; border-bottom-right-radius: 14px;">
+                                <button type="button" class="btn btn-secondary px-4 rounded-pill" data-bs-dismiss="modal">Hủy</button>
+                                <button type="submit" class="btn btn-warning px-4 rounded-pill text-dark fw-bold">Cập Nhật</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
         }
 
@@ -204,5 +239,14 @@
                 });
             });
         });
+
+        function openBalanceModal(userId, userName, currentBalance) {
+            $('#modalUserId').val(userId);
+            $('#modalUserName').val(userName);
+            $('#modalBalanceInput').val(currentBalance);
+            
+            var modal = new bootstrap.Modal(document.getElementById('balanceModal'));
+            modal.show();
+        }
     </script>
 }
