@@ -24,8 +24,14 @@ public class User
 
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 
+    [Range(0, double.MaxValue)]
+    public decimal Balance { get; set; } = 0;
+
     // Navigation properties
     public ICollection<Story> Stories { get; set; } = new List<Story>();
     public ICollection<UserStoryFollow> FollowedStories { get; set; } = new List<UserStoryFollow>();
     public ICollection<UserFavoriteStory> FavoriteStories { get; set; } = new List<UserFavoriteStory>();
+    public ICollection<UserChapterPurchase> ChapterPurchases { get; set; } = new List<UserChapterPurchase>();
+    public ICollection<DepositRequest> DepositRequests { get; set; } = new List<DepositRequest>();
+    public ICollection<DepositRequest> ReviewedDepositRequests { get; set; } = new List<DepositRequest>();
 }

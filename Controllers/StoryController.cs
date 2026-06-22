@@ -115,6 +115,39 @@ public class StoryController : Controller
         var prevChapter = currentIndex > 0 ? allChapters[currentIndex - 1] : null;
         var nextChapter = currentIndex < allChapters.Count - 1 ? allChapters[currentIndex + 1] : null;
 
+        var userId = HttpContext.Session.GetInt32("UserId");
+        var role = HttpContext.Session.GetString("Role");
+        var hasPurchased = false;
+
+        if (chapter.Price > 0 && role != "Admin")
+        {
+            if (!userId.HasValue)
+            {
+                ViewBag.PrevChapter = prevChapter;
+                ViewBag.NextChapter = nextChapter;
+                ViewBag.AllChapters = allChapters;
+                ViewBag.UserBalance = 0m;
+                ViewBag.HasPurchased = false;
+                return View("PaymentRequired", chapter);
+            }
+
+            hasPurchased = await _db.UserChapterPurchases
+                .AnyAsync(p => p.UserId == userId.Value && p.ChapterId == chapter.Id);
+
+            if (!hasPurchased)
+            {
+                ViewBag.PrevChapter = prevChapter;
+                ViewBag.NextChapter = nextChapter;
+                ViewBag.AllChapters = allChapters;
+                ViewBag.UserBalance = await _db.Users
+                    .Where(u => u.Id == userId.Value)
+                    .Select(u => u.Balance)
+                    .FirstOrDefaultAsync();
+                ViewBag.HasPurchased = false;
+                return View("PaymentRequired", chapter);
+            }
+        }
+
         // Tăng lượt xem truyện (chỉ đếm 1 lần mỗi session cho mỗi truyện)
         var viewedKey = $"Viewed_Story_{chapter.StoryId}";
         if (HttpContext.Session.GetString(viewedKey) == null)
@@ -125,7 +158,6 @@ public class StoryController : Controller
         }
 
         // ---- Lưu lịch sử đọc (chỉ dành cho người đã đăng nhập) ----
-        var userId    = HttpContext.Session.GetInt32("UserId");   // int?
         var sessionId = HttpContext.Session.Id;
 
         if (userId.HasValue)
@@ -160,8 +192,64 @@ public class StoryController : Controller
         ViewBag.PrevChapter = prevChapter;
         ViewBag.NextChapter = nextChapter;
         ViewBag.AllChapters = allChapters;
+        ViewBag.HasPurchased = hasPurchased;
 
         return View(chapter);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> PurchaseChapter(int chapterId)
+    {
+        var userId = HttpContext.Session.GetInt32("UserId");
+        if (!userId.HasValue)
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
+        var chapter = await _db.Chapters
+            .Include(c => c.Story)
+            .FirstOrDefaultAsync(c => c.Id == chapterId);
+
+        if (chapter == null) return NotFound();
+
+        if (chapter.Price <= 0 || HttpContext.Session.GetString("Role") == "Admin")
+        {
+            return RedirectToAction("Chapter", new { id = chapterId });
+        }
+
+        var alreadyPurchased = await _db.UserChapterPurchases
+            .AnyAsync(p => p.UserId == userId.Value && p.ChapterId == chapterId);
+
+        if (alreadyPurchased)
+        {
+            return RedirectToAction("Chapter", new { id = chapterId });
+        }
+
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId.Value);
+        if (user == null)
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
+        if (user.Balance < chapter.Price)
+        {
+            TempData["Error"] = "Số dư không đủ để mua chương này. Vui lòng nạp thêm tiền.";
+            return RedirectToAction("Chapter", new { id = chapterId });
+        }
+
+        user.Balance -= chapter.Price;
+        _db.UserChapterPurchases.Add(new UserChapterPurchase
+        {
+            UserId = user.Id,
+            ChapterId = chapter.Id,
+            PricePaid = chapter.Price,
+            PurchasedAt = DateTime.Now
+        });
+
+        await _db.SaveChangesAsync();
+        TempData["Success"] = $"Bạn đã mua chương \"{chapter.Title}\" với giá {chapter.Price:N0} đ.";
+
+        return RedirectToAction("Chapter", new { id = chapterId });
     }
 
     // ── POST /Story/PostComment ──────────────────────────────

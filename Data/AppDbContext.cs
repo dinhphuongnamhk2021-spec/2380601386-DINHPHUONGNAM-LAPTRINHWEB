@@ -17,6 +17,8 @@ public class AppDbContext : DbContext
     public DbSet<ReadingHistory> ReadingHistories { get; set; }
     public DbSet<UserStoryFollow> UserStoryFollows { get; set; }
     public DbSet<UserFavoriteStory> UserFavoriteStories { get; set; }
+    public DbSet<UserChapterPurchase> UserChapterPurchases { get; set; }
+    public DbSet<DepositRequest> DepositRequests { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -104,6 +106,50 @@ public class AppDbContext : DbContext
             .HasIndex(uf => new { uf.UserId, uf.StoryId })
             .IsUnique();
 
+        modelBuilder.Entity<User>()
+            .Property(u => u.Balance)
+            .HasPrecision(18, 2);
+
+        modelBuilder.Entity<Chapter>()
+            .Property(c => c.Price)
+            .HasPrecision(18, 2);
+
+        modelBuilder.Entity<UserChapterPurchase>()
+            .HasOne(p => p.User)
+            .WithMany(u => u.ChapterPurchases)
+            .HasForeignKey(p => p.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<UserChapterPurchase>()
+            .HasOne(p => p.Chapter)
+            .WithMany(c => c.Purchases)
+            .HasForeignKey(p => p.ChapterId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<UserChapterPurchase>()
+            .HasIndex(p => new { p.UserId, p.ChapterId })
+            .IsUnique();
+
+        modelBuilder.Entity<UserChapterPurchase>()
+            .Property(p => p.PricePaid)
+            .HasPrecision(18, 2);
+
+        modelBuilder.Entity<DepositRequest>()
+            .HasOne(d => d.User)
+            .WithMany(u => u.DepositRequests)
+            .HasForeignKey(d => d.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<DepositRequest>()
+            .HasOne(d => d.ReviewedByAdmin)
+            .WithMany(u => u.ReviewedDepositRequests)
+            .HasForeignKey(d => d.ReviewedByAdminId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        modelBuilder.Entity<DepositRequest>()
+            .Property(d => d.Amount)
+            .HasPrecision(18, 2);
+
         // Seed dữ liệu thể loại mặc định
         modelBuilder.Entity<Genre>().HasData(
             new Genre { Id = 1, Name = "Tiên Hiệp",   Slug = "tien-hiep"   },
@@ -127,6 +173,7 @@ public class AppDbContext : DbContext
                 Email = "admin@doctruyen.com",
                 PasswordHash = "jGl25bVBBBW96Qi9Te4V37Fnqchz/Eu4qB9vKrRIqRg=", // hash of "admin"
                 Role = "Admin",
+                Balance = 0,
                 CreatedAt = DateTime.Now.AddDays(-30)
             },
             new User { 
@@ -135,6 +182,7 @@ public class AppDbContext : DbContext
                 Email = "user@doctruyen.com",
                 PasswordHash = "BPiZbadjt6lpsQKO4wB1aerzpjVIbdqyEdUSyFud+Ps=", // hash of "user"
                 Role = "User",
+                Balance = 50000,
                 CreatedAt = DateTime.Now.AddDays(-20)
             }
         );
@@ -265,6 +313,7 @@ public class AppDbContext : DbContext
                 Title = "Lão nhân bí ẩn", 
                 Content = "Đêm đó, khi Tiêu Viêm đang ngủ say, một luồng ánh sáng kỳ lạ đột nhiên xuất hiện trong phòng hắn. Một lão nhân với mái tóc bạc phơ bước ra từ trong ánh sáng.<br><br>\"Tiểu tử, ngươi có muốn thay đổi số phận của mình không?\" Lão nhân nhìn Tiêu Viêm, trong mắt chứa đựng một vẻ thâm sâu khó lường.<br><br>Tiêu Viêm giật mình tỉnh giấc, nhìn lão nhân trước mặt, trong lòng tràn ngập kinh ngạc.",
                 StoryId = 1,
+                Price = 5000,
                 CreatedAt = DateTime.Now.AddDays(-29)
             },
             new Chapter { 
@@ -281,6 +330,7 @@ public class AppDbContext : DbContext
                 Title = "Thử thách", 
                 Content = "Ba ngày sau, Lâm gia tổ chức một buổi thử thách cho các thiếu niên trong gia tộc. Đây là cơ hội để Lâm Động chứng minh thực lực của mình.<br><br>Trên võ đài, Lâm Động đối mặt với đối thủ mạnh nhất của mình - Lâm Lăng. Hai người nhìn nhau, không khí xung quanh trở nên căng thẳng.<br><br>\"Đến đi, để ta xem thực lực của ngươi đến đâu!\" Lâm Lăng gầm lên, toàn thân tỏa ra khí thế mạnh mẽ.",
                 StoryId = 2,
+                Price = 5000,
                 CreatedAt = DateTime.Now.AddDays(-24)
             },
             new Chapter { 
@@ -306,6 +356,7 @@ public class AppDbContext : DbContext
                 Title = "Vụ án nhà hàng", 
                 Content = "Tại một nhà hàng sang trọng, một vụ án mạng xảy ra. Nạn nhân là một doanh nhân giàu có bị phát hiện đã chết trong phòng riêng.<br><br>Conan cùng nhóm thám tử nhí bắt đầu điều tra. Bằng những manh mối tinh tế, Conan dần dần hé lộ chân tướng của kẻ sát nhân.<br><br>\"Sự thật chỉ có một!\"",
                 StoryId = 6,
+                Price = 7000,
                 CreatedAt = DateTime.Now.AddDays(-59)
             },
             // Doraemon chapters
@@ -323,6 +374,7 @@ public class AppDbContext : DbContext
                 Title = "Bảo bối Cánh cửa thần kỳ", 
                 Content = "Doraemon lấy ra bảo bối Cánh cửa thần kỳ, có thể đi đến bất cứ đâu chỉ cần nghĩ về nơi đó.<br><br>Nobita cùng Doraemon và bạn bè đi đến nhiều nơi thú vị: rừng rậm, sa mạc, thậm chí là vương quốc của khủng long.<br><br>\"Cuộc phiêu lưu mới bắt đầu!\"",
                 StoryId = 7,
+                Price = 7000,
                 CreatedAt = DateTime.Now.AddDays(-89)
             },
             // One Piece chapters
@@ -340,6 +392,7 @@ public class AppDbContext : DbContext
                 Title = "Zoro gia nhập băng", 
                 Content = "Luffy đến làng Shimotsuki và gặp Roronoa Zoro, một kiếm sĩ nổi tiếng với kỹ năng ba kiếm.<br><br>Sau khi chứng kiến sức mạnh và lòng dũng cảm của Zoro, Luffy mời hắn gia nhập băng Mũ Rơm.<br><br>\"Hãy trở thành kiếm sĩ mạnh nhất của băng ta!\"",
                 StoryId = 8,
+                Price = 10000,
                 CreatedAt = DateTime.Now.AddDays(-119)
             }
         );

@@ -200,6 +200,14 @@
         color: var(--muted);
         font-size: .8rem;
     }
+    .chapter-price {
+        min-width: 92px;
+        margin-left: 12px;
+        color: var(--gold);
+        font-size: .82rem;
+        font-weight: 700;
+        text-align: right;
+    }
 
     .stats-grid {
         display: grid;
@@ -502,6 +510,7 @@
                                 <a href="/Story/Chapter/@chapter.Id" class="chapter-item">
                                     <span class="chapter-number">@chapter.ChapterNumber</span>
                                     <span class="chapter-title">@chapter.Title</span>
+                                    <span class="chapter-price">@(chapter.Price > 0 ? $"{chapter.Price:N0} đ" : "Miễn phí")</span>
                                     <span class="chapter-date">@chapter.CreatedAt.ToString("dd/MM/yyyy")</span>
                                 </a>
                             </li>

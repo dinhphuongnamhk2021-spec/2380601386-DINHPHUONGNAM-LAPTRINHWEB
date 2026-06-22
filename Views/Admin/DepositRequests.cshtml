@@ -1,0 +1,100 @@
+@model List<DOANLAPTRINHWWEB.Models.DepositRequest>
+@{
+    ViewData["Title"] = "Duyệt nạp tiền";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="admin-card">
+    <div class="admin-card-header">
+        <h3 class="admin-card-title">
+            <i class="bi bi-cash-coin text-warning"></i> Yêu cầu nạp tiền
+        </h3>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+            Chưa có yêu cầu nạp tiền nào.
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Mã</th>
+                        <th>Người dùng</th>
+                        <th>Số tiền</th>
+                        <th>Nội dung CK</th>
+                        <th>Ngày tạo</th>
+                        <th>Trạng thái</th>
+                        <th>Người duyệt</th>
+                        <th class="text-end">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var request in Model)
+                    {
+                        var statusClass = request.Status == "Approved" ? "bg-success-subtle text-success" : request.Status == "Rejected" ? "bg-danger-subtle text-danger" : "bg-warning-subtle text-warning";
+                        var statusText = request.Status == "Approved" ? "Đã duyệt" : request.Status == "Rejected" ? "Từ chối" : "Chờ duyệt";
+                        <tr>
+                            <td>#@request.Id</td>
+                            <td>
+                                <div class="fw-semibold">@request.User.UserName</div>
+                                <div class="text-muted small">@request.User.Email</div>
+                            </td>
+                            <td class="fw-bold">@request.Amount.ToString("N0") đ</td>
+                            <td><code>@request.TransferContent</code></td>
+                            <td>@request.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td><span class="badge rounded-pill @statusClass">@statusText</span></td>
+                            <td>
+                                @if (request.ReviewedByAdmin != null)
+                                {
+                                    <span>@request.ReviewedByAdmin.UserName</span>
+                                    <div class="text-muted small">@request.ReviewedAt?.ToString("dd/MM/yyyy HH:mm")</div>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">-</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                @if (request.Status == "Pending")
+                                {
+                                    <div class="d-inline-flex gap-2">
+                                        <form method="post" asp-action="ApproveDeposit" asp-route-id="@request.Id">
+                                            <button type="submit" class="btn btn-sm btn-success">
+                                                <i class="bi bi-check2-circle"></i> Duyệt
+                                            </button>
+                                        </form>
+                                        <form method="post" asp-action="RejectDeposit" asp-route-id="@request.Id">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                <i class="bi bi-x-circle"></i> Từ chối
+                                            </button>
+                                        </form>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <span class="text-muted small">Đã xử lý</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

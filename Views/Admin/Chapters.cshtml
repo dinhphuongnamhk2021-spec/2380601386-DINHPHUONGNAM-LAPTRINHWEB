@@ -27,6 +27,7 @@
                     <tr>
                         <th class="px-4 py-3 text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Chương Số</th>
                         <th class="px-4 py-3 text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Tiêu Đề Chương</th>
+                        <th class="px-4 py-3 text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Giá đọc</th>
                         <th class="px-4 py-3 text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Ngày Đăng</th>
                         <th class="px-4 py-3 text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Hành Động</th>
                     </tr>
@@ -42,6 +43,16 @@
                                 </td>
                                 <td class="px-4 py-3 fw-medium">
                                     @chapter.Title
+                                </td>
+                                <td class="px-4 py-3">
+                                    @if (chapter.Price > 0)
+                                    {
+                                        <span class="badge bg-warning text-dark">@chapter.Price.ToString("N0") đ</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success">Miễn phí</span>
+                                    }
                                 </td>
                                 <td class="px-4 py-3 text-muted small">
                                     @chapter.CreatedAt.ToString("dd/MM/yyyy HH:mm")
@@ -60,7 +71,7 @@
                     else
                     {
                         <tr>
-                            <td colspan="4" class="text-center py-5 text-muted">
+                            <td colspan="5" class="text-center py-5 text-muted">
                                 <i class="bi bi-inbox fs-1 d-block mb-3"></i>
                                 Chưa có chương nào cho truyện này.
                             </td>

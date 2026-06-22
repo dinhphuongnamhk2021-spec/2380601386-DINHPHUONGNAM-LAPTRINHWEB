@@ -244,6 +244,11 @@
                     <i class="bi bi-people"></i> Quản Lý Người Dùng
                 </a>
             </li>
+            <li class="sidebar-item">
+                <a href="/Admin/DepositRequests" class="sidebar-link" id="menu-deposits">
+                    <i class="bi bi-cash-coin"></i> Duyệt Nạp Tiền
+                </a>
+            </li>
             <li class="sidebar-item" style="margin-top: 24px; border-top: 1px solid rgba(255,255,255,.05); padding-top: 16px;">
                 <a href="/Story" class="sidebar-link">
                     <i class="bi bi-box-arrow-left"></i> Về Trang Chủ
@@ -312,6 +317,8 @@
                 $('#menu-stories').addClass('active');
             } else if (path.indexOf('/admin/users') === 0) {
                 $('#menu-users').addClass('active');
+            } else if (path.indexOf('/admin/depositrequests') === 0) {
+                $('#menu-deposits').addClass('active');
             }
         });
     </script>

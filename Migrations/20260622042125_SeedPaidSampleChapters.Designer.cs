@@ -4,6 +4,7 @@ using DOANLAPTRINHWWEB.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DOANLAPTRINHWWEB.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260622042125_SeedPaidSampleChapters")]
+    partial class SeedPaidSampleChapters
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -64,7 +67,7 @@ namespace DOANLAPTRINHWWEB.Migrations
                             Id = 1,
                             ChapterNumber = 1,
                             Content = "Tại gia tộc Tiêu thị của Đế quốc Đấu Khí, một thiếu niên khoảng mười bảy mười tám tuổi đang ngồi thẫn thờ trên một tảng đá lớn bên bờ suối.<br><br>Thiếu niên này dung mạo tuấn tú, nhưng lúc này trên mặt lại đầy vẻ u sầu. Hắn tên là Tiêu Viêm, là con trai trưởng của Tiêu gia, nhưng lại bị người trong gia tộc khinh thường vì không thể luyện đan.<br><br>\"Ta lại là phế vật sao...\" Tiêu Viêm tự cười tự nói, trong lòng tràn ngập bất lực.",
-                            CreatedAt = new DateTime(2026, 5, 23, 11, 51, 15, 861, DateTimeKind.Local).AddTicks(9634),
+                            CreatedAt = new DateTime(2026, 5, 23, 11, 21, 25, 93, DateTimeKind.Local).AddTicks(2380),
                             Price = 0m,
                             StoryId = 1,
                             Title = "Thiên tài luyện dược"
@@ -74,7 +77,7 @@ namespace DOANLAPTRINHWWEB.Migrations
                             Id = 2,
                             ChapterNumber = 2,
                             Content = "Đêm đó, khi Tiêu Viêm đang ngủ say, một luồng ánh sáng kỳ lạ đột nhiên xuất hiện trong phòng hắn. Một lão nhân với mái tóc bạc phơ bước ra từ trong ánh sáng.<br><br>\"Tiểu tử, ngươi có muốn thay đổi số phận của mình không?\" Lão nhân nhìn Tiêu Viêm, trong mắt chứa đựng một vẻ thâm sâu khó lường.<br><br>Tiêu Viêm giật mình tỉnh giấc, nhìn lão nhân trước mặt, trong lòng tràn ngập kinh ngạc.",
-                            CreatedAt = new DateTime(2026, 5, 24, 11, 51, 15, 862, DateTimeKind.Local).AddTicks(377),
+                            CreatedAt = new DateTime(2026, 5, 24, 11, 21, 25, 93, DateTimeKind.Local).AddTicks(3059),
                             Price = 5000m,
                             StoryId = 1,
                             Title = "Lão nhân bí ẩn"
@@ -84,7 +87,7 @@ namespace DOANLAPTRINHWWEB.Migrations
                             Id = 3,
                             ChapterNumber = 1,
                             Content = "Tại một vùng núi non hùng vĩ, một thiếu niên khoảng mười lăm mười sáu tuổi đang ngồi dưới gốc cây cổ thụ, nhắm mắt dưỡng thần.<br><br>Thiếu niên này tên là Lâm Động, là con trai của Lâm gia - một trong tứ đại gia tộc của Thiên Đan thành. Dù còn trẻ, nhưng hắn đã có tu vi đạt đến Đan Nguyên cảnh.<br><br>\"Đại tỷ, đệ nhất định sẽ không làm thất vọng mong đợi của người.\" Lâm Động mở mắt, trong mắt chứa đựng sự kiên định.",
-                            CreatedAt = new DateTime(2026, 5, 28, 11, 51, 15, 862, DateTimeKind.Local).AddTicks(383),
+                            CreatedAt = new DateTime(2026, 5, 28, 11, 21, 25, 93, DateTimeKind.Local).AddTicks(3065),
                             Price = 0m,
                             StoryId = 2,
                             Title = "Lâm Động"
@@ -94,7 +97,7 @@ namespace DOANLAPTRINHWWEB.Migrations
                             Id = 4,
                             ChapterNumber = 2,
                             Content = "Ba ngày sau, Lâm gia tổ chức một buổi thử thách cho các thiếu niên trong gia tộc. Đây là cơ hội để Lâm Động chứng minh thực lực của mình.<br><br>Trên võ đài, Lâm Động đối mặt với đối thủ mạnh nhất của mình - Lâm Lăng. Hai người nhìn nhau, không khí xung quanh trở nên căng thẳng.<br><br>\"Đến đi, để ta xem thực lực của ngươi đến đâu!\" Lâm Lăng gầm lên, toàn thân tỏa ra khí thế mạnh mẽ.",
-                            CreatedAt = new DateTime(2026, 5, 29, 11, 51, 15, 862, DateTimeKind.Local).AddTicks(386),
+                            CreatedAt = new DateTime(2026, 5, 29, 11, 21, 25, 93, DateTimeKind.Local).AddTicks(3068),
                             Price = 5000m,
                             StoryId = 2,
                             Title = "Thử thách"
@@ -104,7 +107,7 @@ namespace DOANLAPTRINHWWEB.Migrations
                             Id = 5,
                             ChapterNumber = 1,
                             Content = "Đại thiên thế giới, một nơi rộng lớn vô biên, nơi vạn tộc cùng tồn tại. Ở đây, cường giả tôn trọng, kẻ yếu bị chà đạp.<br><br>Tại một góc của đại thiên thế giới, một thiếu niên tên là Lâm Động đang đứng trên đỉnh núi, nhìn xuống thế giới rộng lớn phía dưới.<br><br>\"Ta nhất định sẽ đứng trên đỉnh cao của thế giới này!\" Lâm Động gầm lên, trong mắt chứa đựng sự kiên định không thể lay chuyển.",
-                            CreatedAt = new DateTime(2026, 6, 2, 11, 51, 15, 862, DateTimeKind.Local).AddTicks(388),
+                            CreatedAt = new DateTime(2026, 6, 2, 11, 21, 25, 93, DateTimeKind.Local).AddTicks(3070),
                             Price = 0m,
                             StoryId = 3,
                             Title = "Đại thiên thế giới"
@@ -114,7 +117,7 @@ namespace DOANLAPTRINHWWEB.Migrations
                             Id = 6,
                             ChapterNumber = 1,
                             Content = "Kudo Shinichi, một thám tử trung học nổi tiếng, bị tổ chức áo đen tấn công và ép uống thuốc độc. Thuốc khiến cơ thể hắn teo nhỏ thành một đứa trẻ 7 tuổi.<br><br>Shinichi đổi tên thành Edogawa Conan và sống cùng gia đình Mori. Hắn quyết tâm tìm ra tổ chức áo đen và lấy lại hình dáng cũ.<br><br>\"Dù cơ thể có teo nhỏ, trí tuệ thám tử vẫn không thay đổi!\"",
-                            CreatedAt = new DateTime(2026, 4, 23, 11, 51, 15, 862, DateTimeKind.Local).AddTicks(390),
+                            CreatedAt = new DateTime(2026, 4, 23, 11, 21, 25, 93, DateTimeKind.Local).AddTicks(3072),
                             Price = 0m,
                             StoryId = 6,
                             Title = "Thám tử lừng danh变小"
@@ -124,7 +127,7 @@ namespace DOANLAPTRINHWWEB.Migrations
                             Id = 7,
                             ChapterNumber = 2,
                             Content = "Tại một nhà hàng sang trọng, một vụ án mạng xảy ra. Nạn nhân là một doanh nhân giàu có bị phát hiện đã chết trong phòng riêng.<br><br>Conan cùng nhóm thám tử nhí bắt đầu điều tra. Bằng những manh mối tinh tế, Conan dần dần hé lộ chân tướng của kẻ sát nhân.<br><br>\"Sự thật chỉ có một!\"",
-                            CreatedAt = new DateTime(2026, 4, 24, 11, 51, 15, 862, DateTimeKind.Local).AddTicks(393),
+                            CreatedAt = new DateTime(2026, 4, 24, 11, 21, 25, 93, DateTimeKind.Local).AddTicks(3073),
                             Price = 7000m,
                             StoryId = 6,
                             Title = "Vụ án nhà hàng"
@@ -134,7 +137,7 @@ namespace DOANLAPTRINHWWEB.Migrations
                             Id = 8,
                             ChapterNumber = 1,
                             Content = "Nobi Nobita, một cậu học sinh yếu đuối và hay bị bắt nạt, luôn ước mơ có một người bạn giúp đỡ mình.<br><br>Một ngày, từ ngăn kéo của Nobita, một chú mèo máy màu xanh xuất hiện. Đó là Doraemon, đến từ thế kỷ 22 để giúp Nobita.<br><br>\"Tao sẽ giúp mày thay đổi số phận!\"",
-                            CreatedAt = new DateTime(2026, 3, 24, 11, 51, 15, 862, DateTimeKind.Local).AddTicks(395),
+                            CreatedAt = new DateTime(2026, 3, 24, 11, 21, 25, 93, DateTimeKind.Local).AddTicks(3075),
                             Price = 0m,
                             StoryId = 7,
                             Title = "Doraemon xuất hiện"
@@ -144,7 +147,7 @@ namespace DOANLAPTRINHWWEB.Migrations
                             Id = 9,
                             ChapterNumber = 2,
                             Content = "Doraemon lấy ra bảo bối Cánh cửa thần kỳ, có thể đi đến bất cứ đâu chỉ cần nghĩ về nơi đó.<br><br>Nobita cùng Doraemon và bạn bè đi đến nhiều nơi thú vị: rừng rậm, sa mạc, thậm chí là vương quốc của khủng long.<br><br>\"Cuộc phiêu lưu mới bắt đầu!\"",
-                            CreatedAt = new DateTime(2026, 3, 25, 11, 51, 15, 862, DateTimeKind.Local).AddTicks(396),
+                            CreatedAt = new DateTime(2026, 3, 25, 11, 21, 25, 93, DateTimeKind.Local).AddTicks(3077),
                             Price = 7000m,
                             StoryId = 7,
                             Title = "Bảo bối Cánh cửa thần kỳ"
@@ -154,7 +157,7 @@ namespace DOANLAPTRINHWWEB.Migrations
                             Id = 10,
                             ChapterNumber = 1,
                             Content = "Trong làng Foosha, cậu bé Monkey D. Luffy luôn mơ ước trở thành Vua Hải Tặc. Hắn ăn trái ác quỷ Gomu Gomu no, biến cơ thể thành cao su.<br><br>Luffy quyết tâm ra khơi, tìm kiếm băng hải tặc và kho báu One Piece huyền thoại.<br><br>\"Ta sẽ trở thành Vua Hải Tặc!\"",
-                            CreatedAt = new DateTime(2026, 2, 22, 11, 51, 15, 862, DateTimeKind.Local).AddTicks(398),
+                            CreatedAt = new DateTime(2026, 2, 22, 11, 21, 25, 93, DateTimeKind.Local).AddTicks(3078),
                             Price = 0m,
                             StoryId = 8,
                             Title = "Sự khởi đầu của huyền thoại"
@@ -164,7 +167,7 @@ namespace DOANLAPTRINHWWEB.Migrations
                             Id = 11,
                             ChapterNumber = 2,
                             Content = "Luffy đến làng Shimotsuki và gặp Roronoa Zoro, một kiếm sĩ nổi tiếng với kỹ năng ba kiếm.<br><br>Sau khi chứng kiến sức mạnh và lòng dũng cảm của Zoro, Luffy mời hắn gia nhập băng Mũ Rơm.<br><br>\"Hãy trở thành kiếm sĩ mạnh nhất của băng ta!\"",
-                            CreatedAt = new DateTime(2026, 2, 23, 11, 51, 15, 862, DateTimeKind.Local).AddTicks(400),
+                            CreatedAt = new DateTime(2026, 2, 23, 11, 21, 25, 93, DateTimeKind.Local).AddTicks(3080),
                             Price = 10000m,
                             StoryId = 8,
                             Title = "Zoro gia nhập băng"
@@ -204,49 +207,6 @@ namespace DOANLAPTRINHWWEB.Migrations
                     b.HasIndex("StoryId");
 
                     b.ToTable("Comments");
-                });
-
-            modelBuilder.Entity("DOANLAPTRINHWWEB.Models.DepositRequest", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<decimal>("Amount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("ReviewedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("ReviewedByAdminId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
-
-                    b.Property<string>("TransferContent")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ReviewedByAdminId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("DepositRequests");
                 });
 
             modelBuilder.Entity("DOANLAPTRINHWWEB.Models.Genre", b =>
@@ -531,11 +491,11 @@ namespace DOANLAPTRINHWWEB.Migrations
                             Id = 1,
                             AuthorName = "Thiên Tằm Thổ Đậu",
                             CoverImage = "https://upload.wikimedia.org/wikipedia/en/thumb/d/dc/Fight_Break_Sphere_drama_poster.jpeg/250px-Fight_Break_Sphere_drama_poster.jpeg",
-                            CreatedAt = new DateTime(2026, 5, 23, 11, 51, 15, 861, DateTimeKind.Local).AddTicks(4519),
+                            CreatedAt = new DateTime(2026, 5, 23, 11, 21, 25, 92, DateTimeKind.Local).AddTicks(7488),
                             Description = "Thiên Tằm Thổ Đậu - một thiên tài luyện dược, vì không thể luyện đan mà bị người nhà khinh thường. Một ngày nọ, hắn gặp được một lão nhân bí ẩn, từ đó bước vào con đường tu tiên đầy huyền thoại.",
                             Status = "Hoàn thành",
                             Title = "Đấu Phá Thương Khung",
-                            UpdatedAt = new DateTime(2026, 6, 17, 11, 51, 15, 861, DateTimeKind.Local).AddTicks(4880),
+                            UpdatedAt = new DateTime(2026, 6, 17, 11, 21, 25, 92, DateTimeKind.Local).AddTicks(7795),
                             ViewCount = 15420
                         },
                         new
@@ -543,11 +503,11 @@ namespace DOANLAPTRINHWWEB.Migrations
                             Id = 2,
                             AuthorName = "Mạc Mặc",
                             CoverImage = "https://static.wikia.nocookie.net/martial-peak-mp/images/1/17/Yang_Kai.png/revision/latest?cb=20180221130629",
-                            CreatedAt = new DateTime(2026, 5, 28, 11, 51, 15, 861, DateTimeKind.Local).AddTicks(5201),
+                            CreatedAt = new DateTime(2026, 5, 28, 11, 21, 25, 92, DateTimeKind.Local).AddTicks(8101),
                             Description = "Câu chuyện về một thiếu niên tên là Lâm Động, trên vai gánh vác trọng trách gia tộc, bước vào thế giới rộng lớn của võ lâm, dùng mười năm thời gian để viết nên một truyền thuyết.",
                             Status = "Hoàn thành",
                             Title = "Vũ Luyện Đỉnh Phong",
-                            UpdatedAt = new DateTime(2026, 6, 19, 11, 51, 15, 861, DateTimeKind.Local).AddTicks(5202),
+                            UpdatedAt = new DateTime(2026, 6, 19, 11, 21, 25, 92, DateTimeKind.Local).AddTicks(8102),
                             ViewCount = 12350
                         },
                         new
@@ -555,11 +515,11 @@ namespace DOANLAPTRINHWWEB.Migrations
                             Id = 3,
                             AuthorName = "Thiên Tằm Thổ Đậu",
                             CoverImage = "/images/default-cover.jpg",
-                            CreatedAt = new DateTime(2026, 6, 2, 11, 51, 15, 861, DateTimeKind.Local).AddTicks(5206),
+                            CreatedAt = new DateTime(2026, 6, 2, 11, 21, 25, 92, DateTimeKind.Local).AddTicks(8105),
                             Description = "Đại thiên thế giới, vạn tộc lâm lập, hùng giả như rừng, cường giả như mây. Một thiếu niên từ đại tộc bước ra, dùng đôi tay của mình, chém phá hết thảy chướng ngại, đứng trên đỉnh cao của thiên hạ.",
                             Status = "Hoàn thành",
                             Title = "Nguyên Tôn",
-                            UpdatedAt = new DateTime(2026, 6, 21, 11, 51, 15, 861, DateTimeKind.Local).AddTicks(5206),
+                            UpdatedAt = new DateTime(2026, 6, 21, 11, 21, 25, 92, DateTimeKind.Local).AddTicks(8106),
                             ViewCount = 18200
                         },
                         new
@@ -567,11 +527,11 @@ namespace DOANLAPTRINHWWEB.Migrations
                             Id = 4,
                             AuthorName = "Vong Ngữ",
                             CoverImage = "/images/default-cover.jpg",
-                            CreatedAt = new DateTime(2026, 6, 7, 11, 51, 15, 861, DateTimeKind.Local).AddTicks(5210),
+                            CreatedAt = new DateTime(2026, 6, 7, 11, 21, 25, 92, DateTimeKind.Local).AddTicks(8109),
                             Description = "Một thiếu niên bình thường, vì cơ duyên xảo hợp mà bước vào thế giới tu tiên. Từ một phàm nhân nhỏ bé, dần dần trưởng thành, cuối cùng trở thành một đại năng giả đứng đầu thiên hạ.",
                             Status = "Đang ra",
                             Title = "Phàm Nhân Tu Tiên",
-                            UpdatedAt = new DateTime(2026, 6, 22, 11, 51, 15, 861, DateTimeKind.Local).AddTicks(5210),
+                            UpdatedAt = new DateTime(2026, 6, 22, 11, 21, 25, 92, DateTimeKind.Local).AddTicks(8109),
                             ViewCount = 9870
                         },
                         new
@@ -579,11 +539,11 @@ namespace DOANLAPTRINHWWEB.Migrations
                             Id = 5,
                             AuthorName = "Cô Đơn Địa Phi",
                             CoverImage = "/images/default-cover.jpg",
-                            CreatedAt = new DateTime(2026, 6, 12, 11, 51, 15, 861, DateTimeKind.Local).AddTicks(5213),
+                            CreatedAt = new DateTime(2026, 6, 12, 11, 21, 25, 92, DateTimeKind.Local).AddTicks(8112),
                             Description = "Trong một thế giới nơi cường giả tôn trọng, một thiếu niên với thiên tài luyện dược độc nhất vô nhị, dùng đan dược để thay đổi số phận của mình.",
                             Status = "Đang ra",
                             Title = "Thần Đạo Đan Tôn",
-                            UpdatedAt = new DateTime(2026, 6, 22, 11, 51, 15, 861, DateTimeKind.Local).AddTicks(5214),
+                            UpdatedAt = new DateTime(2026, 6, 22, 11, 21, 25, 92, DateTimeKind.Local).AddTicks(8112),
                             ViewCount = 7650
                         },
                         new
@@ -592,11 +552,11 @@ namespace DOANLAPTRINHWWEB.Migrations
                             AuthorId = 2,
                             AuthorName = "Aoyama Gōshō",
                             CoverImage = "/img/Conan.jpg",
-                            CreatedAt = new DateTime(2026, 4, 23, 11, 51, 15, 861, DateTimeKind.Local).AddTicks(5216),
+                            CreatedAt = new DateTime(2026, 4, 23, 11, 21, 25, 92, DateTimeKind.Local).AddTicks(8115),
                             Description = "Edogawa Conan, một thám tử tiểu học với trí tuệ phi thường, cùng nhóm thám tử nhí giải quyết các vụ án khó khăn. Truyện xoay quanh cuộc chiến chống lại tổ chức áo đen.",
                             Status = "Đang ra",
                             Title = "Thám Tử Lừng Danh Conan",
-                            UpdatedAt = new DateTime(2026, 6, 22, 11, 51, 15, 861, DateTimeKind.Local).AddTicks(5217),
+                            UpdatedAt = new DateTime(2026, 6, 22, 11, 21, 25, 92, DateTimeKind.Local).AddTicks(8116),
                             ViewCount = 25000
                         },
                         new
@@ -605,11 +565,11 @@ namespace DOANLAPTRINHWWEB.Migrations
                             AuthorId = 2,
                             AuthorName = "Fujiko F. Fujio",
                             CoverImage = "https://books.google.com/books/content?id=UuoArgEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
-                            CreatedAt = new DateTime(2026, 3, 24, 11, 51, 15, 861, DateTimeKind.Local).AddTicks(5540),
+                            CreatedAt = new DateTime(2026, 3, 24, 11, 21, 25, 92, DateTimeKind.Local).AddTicks(8461),
                             Description = "Doraemon - chú mèo máy đến từ thế kỷ 22, cùng với Nobita và những người bạn trải qua những cuộc phiêu lưu kỳ thú nhờ vào các bảo bối thần kỳ.",
                             Status = "Hoàn thành",
                             Title = "Doraemon",
-                            UpdatedAt = new DateTime(2026, 5, 23, 11, 51, 15, 861, DateTimeKind.Local).AddTicks(5542),
+                            UpdatedAt = new DateTime(2026, 5, 23, 11, 21, 25, 92, DateTimeKind.Local).AddTicks(8462),
                             ViewCount = 32000
                         },
                         new
@@ -618,11 +578,11 @@ namespace DOANLAPTRINHWWEB.Migrations
                             AuthorId = 2,
                             AuthorName = "Eiichiro Oda",
                             CoverImage = "/img/once pice.jpg",
-                            CreatedAt = new DateTime(2026, 2, 22, 11, 51, 15, 861, DateTimeKind.Local).AddTicks(5545),
+                            CreatedAt = new DateTime(2026, 2, 22, 11, 21, 25, 92, DateTimeKind.Local).AddTicks(8466),
                             Description = "Luffy cùng băng Mũ Rơm bắt đầu hành trình tìm kiếm kho báu huyền thoại One Piece và trở thành Vua Hải Tặc. Truyện kể về tình bạn, ước mơ và những cuộc chiến đầy kịch tính.",
                             Status = "Đang ra",
                             Title = "One Piece",
-                            UpdatedAt = new DateTime(2026, 6, 22, 11, 51, 15, 861, DateTimeKind.Local).AddTicks(5546),
+                            UpdatedAt = new DateTime(2026, 6, 22, 11, 21, 25, 92, DateTimeKind.Local).AddTicks(8466),
                             ViewCount = 45000
                         });
                 });
@@ -728,7 +688,7 @@ namespace DOANLAPTRINHWWEB.Migrations
                         {
                             Id = 1,
                             Balance = 0m,
-                            CreatedAt = new DateTime(2026, 5, 23, 11, 51, 15, 860, DateTimeKind.Local).AddTicks(9677),
+                            CreatedAt = new DateTime(2026, 5, 23, 11, 21, 25, 92, DateTimeKind.Local).AddTicks(2882),
                             Email = "admin@doctruyen.com",
                             PasswordHash = "jGl25bVBBBW96Qi9Te4V37Fnqchz/Eu4qB9vKrRIqRg=",
                             Role = "Admin",
@@ -738,7 +698,7 @@ namespace DOANLAPTRINHWWEB.Migrations
                         {
                             Id = 2,
                             Balance = 50000m,
-                            CreatedAt = new DateTime(2026, 6, 2, 11, 51, 15, 861, DateTimeKind.Local).AddTicks(169),
+                            CreatedAt = new DateTime(2026, 6, 2, 11, 21, 25, 92, DateTimeKind.Local).AddTicks(3410),
                             Email = "user@doctruyen.com",
                             PasswordHash = "BPiZbadjt6lpsQKO4wB1aerzpjVIbdqyEdUSyFud+Ps=",
                             Role = "User",
@@ -857,24 +817,6 @@ namespace DOANLAPTRINHWWEB.Migrations
                     b.Navigation("Chapter");
 
                     b.Navigation("Story");
-                });
-
-            modelBuilder.Entity("DOANLAPTRINHWWEB.Models.DepositRequest", b =>
-                {
-                    b.HasOne("DOANLAPTRINHWWEB.Models.User", "ReviewedByAdmin")
-                        .WithMany("ReviewedDepositRequests")
-                        .HasForeignKey("ReviewedByAdminId")
-                        .OnDelete(DeleteBehavior.NoAction);
-
-                    b.HasOne("DOANLAPTRINHWWEB.Models.User", "User")
-                        .WithMany("DepositRequests")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ReviewedByAdmin");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("DOANLAPTRINHWWEB.Models.Rating", b =>
@@ -1031,13 +973,9 @@ namespace DOANLAPTRINHWWEB.Migrations
                 {
                     b.Navigation("ChapterPurchases");
 
-                    b.Navigation("DepositRequests");
-
                     b.Navigation("FavoriteStories");
 
                     b.Navigation("FollowedStories");
-
-                    b.Navigation("ReviewedDepositRequests");
 
                     b.Navigation("Stories");
                 });

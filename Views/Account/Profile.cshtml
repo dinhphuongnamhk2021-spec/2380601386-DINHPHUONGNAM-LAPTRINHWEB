@@ -220,6 +220,10 @@
                         <div class="info-label">Ngày tham gia</div>
                         <div class="info-value">@Model.CreatedAt.ToString("dd/MM/yyyy")</div>
                     </div>
+                    <div class="info-item">
+                        <div class="info-label">Số dư tài khoản</div>
+                        <div class="info-value">@Model.Balance.ToString("N0") đ</div>
+                    </div>
                 </div>
             </div>
 
@@ -262,6 +266,9 @@
                     </a>
                     <a asp-controller="Story" asp-action="Favorites" class="btn btn-outline-info">
                         <i class="bi bi-heart me-2"></i>Truyện Yêu Thích
+                    </a>
+                    <a asp-action="Deposit" class="btn btn-outline-success">
+                        <i class="bi bi-wallet2 me-2"></i>Nạp Tiền
                     </a>
                     <a asp-action="EditProfile" asp-route-userId="@Model.Id" class="btn btn-outline-secondary">
                         <i class="bi bi-pencil me-2"></i>Chỉnh Sửa Hồ Sơ

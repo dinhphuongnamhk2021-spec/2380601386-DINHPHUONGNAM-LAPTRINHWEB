@@ -114,6 +114,7 @@
                             <th>Tên đăng nhập</th>
                             <th>Email</th>
                             <th>Vai trò</th>
+                            <th>Số dư</th>
                             <th>Ngày tham gia</th>
                             <th style="width: 150px; text-align: center;">Số truyện đã đăng</th>
                             <th style="width: 280px; text-align: center;">Thao tác</th>
@@ -136,6 +137,7 @@
                                         <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-3 py-1">User</span>
                                     }
                                 </td>
+                                <td class="fw-semibold text-success">@user.Balance.ToString("N0") đ</td>
                                 <td class="text-muted">@user.CreatedAt.ToString("dd/MM/yyyy")</td>
                                 <td style="text-align: center;" class="fw-semibold">@user.Stories.Count</td>
                                 <td style="text-align: center;">

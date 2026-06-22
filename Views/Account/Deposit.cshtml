@@ -1,0 +1,203 @@
+@model List<DOANLAPTRINHWWEB.Models.DepositRequest>
+@{
+    ViewData["Title"] = "Nạp tiền";
+    var selectedRequest = ViewBag.SelectedRequest as DOANLAPTRINHWWEB.Models.DepositRequest;
+    string? qrUrl = ViewBag.QrUrl as string;
+}
+
+<style>
+    .deposit-wrap {
+        min-height: 62vh;
+        padding: 48px 0;
+    }
+    .deposit-card {
+        background: #fff;
+        border-radius: 12px;
+        padding: 32px;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 8px 28px rgba(0,0,0,.08);
+    }
+    .deposit-title {
+        color: #1a1a2e;
+        font-weight: 800;
+        margin-bottom: 20px;
+    }
+    .quick-amounts {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin: 16px 0;
+    }
+    .quick-amounts button {
+        border: 1px solid #e5e7eb;
+        background: #f9fafb;
+        border-radius: 8px;
+        padding: 10px;
+        font-weight: 700;
+        color: #1a1a2e;
+    }
+    .quick-amounts button:hover {
+        border-color: #e8a045;
+        color: #d97706;
+    }
+    .btn-deposit {
+        background: #e8a045;
+        border-color: #e8a045;
+        color: #111122;
+        font-weight: 800;
+    }
+    .qr-box {
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 18px;
+        background: #f9fafb;
+    }
+    .qr-img {
+        width: 100%;
+        max-width: 330px;
+        display: block;
+        margin: 0 auto 16px;
+        border-radius: 10px;
+        background: #fff;
+    }
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 10px 0;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    .info-row:last-child {
+        border-bottom: 0;
+    }
+    .status-pill {
+        border-radius: 999px;
+        padding: 4px 10px;
+        font-weight: 700;
+        font-size: .78rem;
+    }
+</style>
+
+<div class="container deposit-wrap">
+    <div class="row g-4 justify-content-center">
+        <div class="col-lg-5 col-md-7">
+            <div class="deposit-card">
+                <h1 class="h3 deposit-title">Nạp tiền vào tài khoản</h1>
+
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success">@TempData["Success"]</div>
+                }
+
+                @if (ViewBag.Error != null)
+                {
+                    <div class="alert alert-danger">@ViewBag.Error</div>
+                }
+
+                <form method="post" asp-action="Deposit">
+                    <label for="amount" class="form-label fw-bold">Số tiền</label>
+                    <input id="amount" name="amount" class="form-control form-control-lg" type="number" min="1000" step="1000" required />
+
+                    <div class="quick-amounts">
+                        <button type="button" data-amount="10000">10.000 đ</button>
+                        <button type="button" data-amount="50000">50.000 đ</button>
+                        <button type="button" data-amount="100000">100.000 đ</button>
+                    </div>
+
+                    <button type="submit" class="btn btn-deposit w-100 py-2">
+                        <i class="bi bi-qr-code me-1"></i> Tạo mã QR nạp tiền
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-lg-5 col-md-7">
+            <div class="deposit-card">
+                <h2 class="h5 fw-bold mb-3">Thông tin chuyển khoản</h2>
+
+                @if (selectedRequest != null && qrUrl != null)
+                {
+                    <div class="qr-box">
+                        <img class="qr-img" src="@qrUrl" alt="QR chuyển khoản MB" />
+                        <div class="info-row">
+                            <span class="text-muted">Ngân hàng</span>
+                            <strong>@ViewBag.BankName</strong>
+                        </div>
+                        <div class="info-row">
+                            <span class="text-muted">Số tài khoản</span>
+                            <strong>@ViewBag.BankAccount</strong>
+                        </div>
+                        <div class="info-row">
+                            <span class="text-muted">Chủ tài khoản</span>
+                            <strong>@ViewBag.AccountName</strong>
+                        </div>
+                        <div class="info-row">
+                            <span class="text-muted">Số tiền</span>
+                            <strong>@selectedRequest.Amount.ToString("N0") đ</strong>
+                        </div>
+                        <div class="info-row">
+                            <span class="text-muted">Nội dung</span>
+                            <strong>@selectedRequest.TransferContent</strong>
+                        </div>
+                    </div>
+                    <div class="alert alert-warning mt-3 mb-0">
+                        Sau khi chuyển khoản, yêu cầu sẽ chờ admin xác nhận. Khi admin duyệt thành công, tiền sẽ được cộng vào tài khoản.
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-qr-code fs-1 d-block mb-2"></i>
+                        Nhập số tiền và bấm tạo mã QR để nạp tiền.
+                    </div>
+                }
+            </div>
+        </div>
+
+        @if (Model.Any())
+        {
+            <div class="col-lg-10">
+                <div class="deposit-card">
+                    <h2 class="h5 fw-bold mb-3">Lịch sử yêu cầu nạp</h2>
+                    <div class="table-responsive">
+                        <table class="table align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Mã</th>
+                                    <th>Số tiền</th>
+                                    <th>Nội dung</th>
+                                    <th>Ngày tạo</th>
+                                    <th>Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var request in Model)
+                                {
+                                    var statusClass = request.Status == "Approved" ? "bg-success-subtle text-success" : request.Status == "Rejected" ? "bg-danger-subtle text-danger" : "bg-warning-subtle text-warning";
+                                    var statusText = request.Status == "Approved" ? "Đã duyệt" : request.Status == "Rejected" ? "Từ chối" : "Chờ duyệt";
+                                    <tr>
+                                        <td>#@request.Id</td>
+                                        <td class="fw-bold">@request.Amount.ToString("N0") đ</td>
+                                        <td>@request.TransferContent</td>
+                                        <td>@request.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                                        <td><span class="status-pill @statusClass">@statusText</span></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.querySelectorAll('[data-amount]').forEach(function(button) {
+            button.addEventListener('click', function() {
+                document.getElementById('amount').value = button.dataset.amount;
+            });
+        });
+    </script>
+}

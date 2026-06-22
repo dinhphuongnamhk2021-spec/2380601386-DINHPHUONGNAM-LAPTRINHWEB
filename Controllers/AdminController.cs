@@ -76,6 +76,84 @@ public class AdminController : Controller
         return View(users);
     }
 
+    public async Task<IActionResult> DepositRequests()
+    {
+        var role = HttpContext.Session.GetString("Role");
+        if (role != "Admin")
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
+        var requests = await _db.DepositRequests
+            .Include(d => d.User)
+            .Include(d => d.ReviewedByAdmin)
+            .OrderBy(d => d.Status == "Pending" ? 0 : 1)
+            .ThenByDescending(d => d.CreatedAt)
+            .ToListAsync();
+
+        return View(requests);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> ApproveDeposit(int id)
+    {
+        var role = HttpContext.Session.GetString("Role");
+        if (role != "Admin")
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
+        var request = await _db.DepositRequests
+            .Include(d => d.User)
+            .FirstOrDefaultAsync(d => d.Id == id);
+
+        if (request == null) return NotFound();
+
+        if (request.Status != "Pending")
+        {
+            TempData["Error"] = "Yêu cầu này đã được xử lý trước đó.";
+            return RedirectToAction("DepositRequests");
+        }
+
+        request.User.Balance += request.Amount;
+        request.Status = "Approved";
+        request.ReviewedAt = DateTime.Now;
+        request.ReviewedByAdminId = HttpContext.Session.GetInt32("UserId");
+
+        await _db.SaveChangesAsync();
+
+        TempData["Success"] = $"Đã duyệt nạp {request.Amount:N0} đ cho tài khoản {request.User.UserName}.";
+        return RedirectToAction("DepositRequests");
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> RejectDeposit(int id)
+    {
+        var role = HttpContext.Session.GetString("Role");
+        if (role != "Admin")
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
+        var request = await _db.DepositRequests.FindAsync(id);
+        if (request == null) return NotFound();
+
+        if (request.Status != "Pending")
+        {
+            TempData["Error"] = "Yêu cầu này đã được xử lý trước đó.";
+            return RedirectToAction("DepositRequests");
+        }
+
+        request.Status = "Rejected";
+        request.ReviewedAt = DateTime.Now;
+        request.ReviewedByAdminId = HttpContext.Session.GetInt32("UserId");
+
+        await _db.SaveChangesAsync();
+
+        TempData["Success"] = "Đã từ chối yêu cầu nạp tiền.";
+        return RedirectToAction("DepositRequests");
+    }
+
     // ── GET /Admin/CreateStory ────────────────────────────────
     public async Task<IActionResult> CreateStory()
     {
@@ -260,6 +338,8 @@ public class AdminController : Controller
 
         ModelState.Remove("Story");
         ModelState.Remove("Comments");
+        ModelState.Remove("Purchases");
+        ModelState.Remove("Purchases");
 
         if (ModelState.IsValid)
         {
@@ -314,6 +394,7 @@ public class AdminController : Controller
             existingChapter.Title = chapter.Title;
             existingChapter.ChapterNumber = chapter.ChapterNumber;
             existingChapter.Content = chapter.Content;
+            existingChapter.Price = chapter.Price;
 
             await _db.SaveChangesAsync();
             return RedirectToAction("Chapters", new { id = chapter.StoryId });

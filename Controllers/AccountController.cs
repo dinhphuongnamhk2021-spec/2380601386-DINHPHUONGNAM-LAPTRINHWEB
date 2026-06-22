@@ -212,6 +212,77 @@ public class AccountController : Controller
         return View(user);
     }
 
+    public async Task<IActionResult> Deposit(int? requestId = null)
+    {
+        var userId = HttpContext.Session.GetInt32("UserId");
+        if (userId == null)
+        {
+            return RedirectToAction("Login");
+        }
+
+        var requests = await _db.DepositRequests
+            .Where(d => d.UserId == userId.Value)
+            .OrderByDescending(d => d.CreatedAt)
+            .Take(10)
+            .ToListAsync();
+
+        var selectedRequest = requestId.HasValue
+            ? requests.FirstOrDefault(d => d.Id == requestId.Value)
+            : requests.FirstOrDefault(d => d.Status == "Pending");
+
+        ViewBag.SelectedRequest = selectedRequest;
+        ViewBag.BankName = "MB";
+        ViewBag.BankAccount = "050524102005";
+        ViewBag.AccountName = "MAI NGUYEN HOANG DUNG";
+        ViewBag.QrUrl = selectedRequest == null ? null : BuildVietQrUrl(selectedRequest);
+
+        return View(requests);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Deposit(decimal amount)
+    {
+        var userId = HttpContext.Session.GetInt32("UserId");
+        if (userId == null)
+        {
+            return RedirectToAction("Login");
+        }
+
+        if (amount <= 0)
+        {
+            ViewBag.Error = "Số tiền nạp phải lớn hơn 0.";
+            return View();
+        }
+
+        if (amount > 10000000)
+        {
+            ViewBag.Error = "Số tiền nạp tối đa mỗi lần là 10.000.000 đ.";
+            return View();
+        }
+
+        if (!await _db.Users.AnyAsync(u => u.Id == userId.Value))
+        {
+            return RedirectToAction("Login");
+        }
+
+        var request = new DepositRequest
+        {
+            UserId = userId.Value,
+            Amount = amount,
+            Status = "Pending",
+            CreatedAt = DateTime.Now
+        };
+
+        _db.DepositRequests.Add(request);
+        await _db.SaveChangesAsync();
+
+        request.TransferContent = $"NAP{request.Id} USER{userId.Value}";
+        await _db.SaveChangesAsync();
+
+        TempData["Success"] = $"Yêu cầu nạp {amount:N0} đ đã được tạo. Vui lòng chuyển khoản đúng nội dung để admin duyệt.";
+        return RedirectToAction("Deposit", new { requestId = request.Id });
+    }
+
     // ── GET /Account/EditProfile ──────────────────────────────
     public async Task<IActionResult> EditProfile()
     {
@@ -349,6 +420,13 @@ public class AccountController : Controller
         var bytes = Encoding.UTF8.GetBytes(password);
         var hash = sha256.ComputeHash(bytes);
         return Convert.ToBase64String(hash);
+    }
+
+    private static string BuildVietQrUrl(DepositRequest request)
+    {
+        var accountName = Uri.EscapeDataString("MAI NGUYEN HOANG DUNG");
+        var addInfo = Uri.EscapeDataString(request.TransferContent);
+        return $"https://img.vietqr.io/image/MB-050524102005-compact2.png?amount={request.Amount:0}&addInfo={addInfo}&accountName={accountName}";
     }
 
     private async Task<string> CreateUniqueGoogleUserName(string email, string? displayName)

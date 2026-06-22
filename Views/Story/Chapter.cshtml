@@ -240,12 +240,20 @@
         <h1 class="chapter-title">Chương @Model.ChapterNumber: @Model.Title</h1>
         <div class="chapter-story">
             Truyện: <a href="/Story/Detail/@Model.Story.Id">@Model.Story.Title</a>
+            @if (Model.Price > 0)
+            {
+                <span class="ms-3 badge bg-warning text-dark">Đã mở khóa: @Model.Price.ToString("N0") đ</span>
+            }
         </div>
     </div>
 </div>
 
 @* ─── MAIN CONTENT ───────────────────────────────────────────────────────────── *@
 <div class="container py-4">
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
     <div class="row">
         <div class="col-lg-8">
             @* Chapter Content *@

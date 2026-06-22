@@ -1,0 +1,132 @@
+@model DOANLAPTRINHWWEB.Models.Chapter
+@{
+    ViewData["Title"] = "Thanh toán chương";
+    var balance = ViewBag.UserBalance as decimal? ?? 0m;
+    var isLoggedIn = Context.Session.GetInt32("UserId").HasValue;
+}
+
+<style>
+    .paywall-wrap {
+        min-height: 62vh;
+        display: flex;
+        align-items: center;
+        padding: 48px 0;
+    }
+    .paywall-panel {
+        background: #fff;
+        border-radius: 12px;
+        padding: 32px;
+        box-shadow: 0 8px 28px rgba(0,0,0,.08);
+        border: 1px solid #e5e7eb;
+    }
+    .paywall-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #fff7ed;
+        color: #d97706;
+        font-size: 2rem;
+        margin-bottom: 18px;
+    }
+    .paywall-title {
+        color: #1a1a2e;
+        font-weight: 800;
+        margin-bottom: 8px;
+    }
+    .paywall-meta {
+        color: #6b7280;
+        margin-bottom: 22px;
+    }
+    .price-box {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+    .price-item {
+        background: #f9fafb;
+        border-radius: 10px;
+        padding: 14px 16px;
+        border: 1px solid #eef0f3;
+    }
+    .price-label {
+        color: #6b7280;
+        font-size: .85rem;
+        margin-bottom: 4px;
+    }
+    .price-value {
+        color: #1a1a2e;
+        font-size: 1.2rem;
+        font-weight: 800;
+    }
+    .btn-pay {
+        background: #e8a045;
+        border-color: #e8a045;
+        color: #111122;
+        font-weight: 800;
+    }
+</style>
+
+<div class="container paywall-wrap">
+    <div class="row justify-content-center w-100">
+        <div class="col-lg-7">
+            <div class="paywall-panel">
+                <div class="paywall-icon">
+                    <i class="bi bi-lock-fill"></i>
+                </div>
+
+                <h1 class="h3 paywall-title">Chương này cần thanh toán để đọc</h1>
+                <div class="paywall-meta">
+                    @Model.Story.Title - Chương @Model.ChapterNumber: @Model.Title
+                </div>
+
+                @if (TempData["Error"] != null)
+                {
+                    <div class="alert alert-danger">@TempData["Error"]</div>
+                }
+
+                <div class="price-box">
+                    <div class="price-item">
+                        <div class="price-label">Giá chương</div>
+                        <div class="price-value">@Model.Price.ToString("N0") đ</div>
+                    </div>
+                    <div class="price-item">
+                        <div class="price-label">Số dư của bạn</div>
+                        <div class="price-value">@balance.ToString("N0") đ</div>
+                    </div>
+                </div>
+
+                @if (!isLoggedIn)
+                {
+                    <p class="text-muted">Vui lòng đăng nhập để mua chương và hệ thống sẽ lưu quyền đọc cho tài khoản của bạn.</p>
+                    <a asp-controller="Account" asp-action="Login" class="btn btn-pay px-4">
+                        <i class="bi bi-person me-1"></i> Đăng nhập để mua
+                    </a>
+                }
+                else if (balance < Model.Price)
+                {
+                    <p class="text-muted">Số dư hiện tại chưa đủ để mua chương này.</p>
+                    <a asp-controller="Account" asp-action="Deposit" class="btn btn-pay px-4">
+                        <i class="bi bi-wallet2 me-1"></i> Nạp tiền
+                    </a>
+                }
+                else
+                {
+                    <form asp-controller="Story" asp-action="PurchaseChapter" method="post">
+                        <input type="hidden" name="chapterId" value="@Model.Id" />
+                        <button type="submit" class="btn btn-pay px-4">
+                            <i class="bi bi-unlock me-1"></i> Mua và đọc ngay
+                        </button>
+                    </form>
+                }
+
+                <a asp-controller="Story" asp-action="Detail" asp-route-id="@Model.StoryId" class="btn btn-link mt-3 px-0">
+                    Quay lại mục lục
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
