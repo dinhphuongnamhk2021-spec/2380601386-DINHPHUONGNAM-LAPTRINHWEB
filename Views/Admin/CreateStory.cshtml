@@ -163,17 +163,12 @@
                 </div>
 
                 <div class="row">
-                    <div class="col-md-6 mb-3">
+                    <div class="col-md-12 mb-3">
                         <label for="Status" class="form-label">Trạng thái phát hành</label>
                         <select class="form-select" id="Status" name="Status">
                             <option value="Đang ra" selected="@(Model?.Status == "Đang ra")">Đang ra</option>
                             <option value="Hoàn thành" selected="@(Model?.Status == "Hoàn thành")">Hoàn thành</option>
                         </select>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="ViewCount" class="form-label">Lượt xem khởi tạo</label>
-                        <input type="number" class="form-control" id="ViewCount" name="ViewCount" 
-                               value="@(Model?.ViewCount ?? 0)" min="0">
                     </div>
                 </div>
             </div>

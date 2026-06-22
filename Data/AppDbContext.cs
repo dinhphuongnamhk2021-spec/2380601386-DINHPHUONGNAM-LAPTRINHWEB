@@ -196,7 +196,7 @@ public class AppDbContext : DbContext
                 Description = "Thiên Tằm Thổ Đậu - một thiên tài luyện dược, vì không thể luyện đan mà bị người nhà khinh thường. Một ngày nọ, hắn gặp được một lão nhân bí ẩn, từ đó bước vào con đường tu tiên đầy huyền thoại.",
                 CoverImage = "https://upload.wikimedia.org/wikipedia/en/thumb/d/dc/Fight_Break_Sphere_drama_poster.jpeg/250px-Fight_Break_Sphere_drama_poster.jpeg",
                 Status = "Hoàn thành",
-                ViewCount = 15420,
+                ViewCount = 0,
                 CreatedAt = DateTime.Now.AddDays(-30),
                 UpdatedAt = DateTime.Now.AddDays(-5)
             },
@@ -207,7 +207,7 @@ public class AppDbContext : DbContext
                 Description = "Câu chuyện về một thiếu niên tên là Lâm Động, trên vai gánh vác trọng trách gia tộc, bước vào thế giới rộng lớn của võ lâm, dùng mười năm thời gian để viết nên một truyền thuyết.",
                 CoverImage = "https://static.wikia.nocookie.net/martial-peak-mp/images/1/17/Yang_Kai.png/revision/latest?cb=20180221130629",
                 Status = "Hoàn thành",
-                ViewCount = 12350,
+                ViewCount = 0,
                 CreatedAt = DateTime.Now.AddDays(-25),
                 UpdatedAt = DateTime.Now.AddDays(-3)
             },
@@ -218,7 +218,7 @@ public class AppDbContext : DbContext
                 Description = "Đại thiên thế giới, vạn tộc lâm lập, hùng giả như rừng, cường giả như mây. Một thiếu niên từ đại tộc bước ra, dùng đôi tay của mình, chém phá hết thảy chướng ngại, đứng trên đỉnh cao của thiên hạ.",
                 CoverImage = "/images/default-cover.jpg",
                 Status = "Hoàn thành",
-                ViewCount = 18200,
+                ViewCount = 0,
                 CreatedAt = DateTime.Now.AddDays(-20),
                 UpdatedAt = DateTime.Now.AddDays(-1)
             },
@@ -229,7 +229,7 @@ public class AppDbContext : DbContext
                 Description = "Một thiếu niên bình thường, vì cơ duyên xảo hợp mà bước vào thế giới tu tiên. Từ một phàm nhân nhỏ bé, dần dần trưởng thành, cuối cùng trở thành một đại năng giả đứng đầu thiên hạ.",
                 CoverImage = "/images/default-cover.jpg",
                 Status = "Đang ra",
-                ViewCount = 9870,
+                ViewCount = 0,
                 CreatedAt = DateTime.Now.AddDays(-15),
                 UpdatedAt = DateTime.Now
             },
@@ -240,7 +240,7 @@ public class AppDbContext : DbContext
                 Description = "Trong một thế giới nơi cường giả tôn trọng, một thiếu niên với thiên tài luyện dược độc nhất vô nhị, dùng đan dược để thay đổi số phận của mình.",
                 CoverImage = "/images/default-cover.jpg",
                 Status = "Đang ra",
-                ViewCount = 7650,
+                ViewCount = 0,
                 CreatedAt = DateTime.Now.AddDays(-10),
                 UpdatedAt = DateTime.Now
             },
@@ -252,7 +252,7 @@ public class AppDbContext : DbContext
                 Description = "Edogawa Conan, một thám tử tiểu học với trí tuệ phi thường, cùng nhóm thám tử nhí giải quyết các vụ án khó khăn. Truyện xoay quanh cuộc chiến chống lại tổ chức áo đen.",
                 CoverImage = "/img/Conan.jpg",
                 Status = "Đang ra",
-                ViewCount = 25000,
+                ViewCount = 0,
                 CreatedAt = DateTime.Now.AddDays(-60),
                 UpdatedAt = DateTime.Now,
                 AuthorId = 2
@@ -265,7 +265,7 @@ public class AppDbContext : DbContext
                 Description = "Doraemon - chú mèo máy đến từ thế kỷ 22, cùng với Nobita và những người bạn trải qua những cuộc phiêu lưu kỳ thú nhờ vào các bảo bối thần kỳ.",
                 CoverImage = "https://books.google.com/books/content?id=UuoArgEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
                 Status = "Hoàn thành",
-                ViewCount = 32000,
+                ViewCount = 0,
                 CreatedAt = DateTime.Now.AddDays(-90),
                 UpdatedAt = DateTime.Now.AddDays(-30),
                 AuthorId = 2
@@ -278,7 +278,7 @@ public class AppDbContext : DbContext
                 Description = "Luffy cùng băng Mũ Rơm bắt đầu hành trình tìm kiếm kho báu huyền thoại One Piece và trở thành Vua Hải Tặc. Truyện kể về tình bạn, ước mơ và những cuộc chiến đầy kịch tính.",
                 CoverImage = "/img/once pice.jpg",
                 Status = "Đang ra",
-                ViewCount = 45000,
+                ViewCount = 0,
                 CreatedAt = DateTime.Now.AddDays(-120),
                 UpdatedAt = DateTime.Now,
                 AuthorId = 2
